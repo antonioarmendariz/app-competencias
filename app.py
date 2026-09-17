@@ -9,19 +9,25 @@ st.set_page_config(
     layout='wide',
 )
 
-# --- APLICACIÓN DE PALETA DE COLORES CORPORATIVA ---
+# --- APLICACIÓN DE PALETA DE COLORES CORPORATIVA CON ALTO CONTRASTE ---
 st.markdown(
     """
     <style>
-    /* Estilos globales y tipografía */
+    /* Estilos globales y tipografía de alto contraste */
     .stApp {
         background-color: #FFFFFF;
         color: #2F3F47;
     }
     
-    /* Encabezados y títulos */
+    /* Encabezados y títulos principales */
     h1, h2, h3, h4, h5, h6 {
         color: #2F3F47 !important;
+        font-weight: 700;
+    }
+    
+    /* Texto general y párrafos en el cuerpo */
+    p, span, label, .stMarkdown {
+        color: #2F3F47;
     }
     
     /* Botones principales */
@@ -37,17 +43,32 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Sidebar */
+    /* Sidebar: Fondo oscuro institucional con texto blanco contrastante */
     [data-testid="stSidebar"] {
         background-color: #2F3F47;
     }
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] .stMarkdown, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
         color: #FFFFFF !important;
+    }
+    
+    /* Inputs de texto en sidebar para asegurar legibilidad */
+    [data-testid="stSidebar"] input {
+        color: #2F3F47 !important;
+        background-color: #FFFFFF !important;
     }
     
     /* Métricas y tarjetas de estado */
     [data-testid="stMetricValue"] {
         color: #FF7600 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #2F3F47 !important;
     }
     </style>
 """,
