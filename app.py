@@ -4,13 +4,12 @@ import streamlit as st
 
 # Configuración inicial de la página
 st.set_page_config(
-    page_title='Sistema Integrado de Capacitación 70/20/10 y Competencias',
+    page_title='Sistema de Gestión De Desarrollo de Talento INNODEP SC',
     page_icon='🎯',
     layout='wide',
 )
 
 # --- APLICACIÓN DE PALETA DE COLORES CORPORATIVA ---
-# #2F3F47 (Gris oscuro / Principal), #62D5B1 (Verde menta / Acento), #FF7600 (Naranja / Destacados), #FFFFFF (Blanco)
 st.markdown(
     """
     <style>
@@ -98,14 +97,6 @@ else:
     st.sidebar.info('Perfil: Usuario General')
 
 st.sidebar.markdown('---')
-st.sidebar.markdown('🖼️ Cargar Logo de la Empresa')
-logo_file = st.sidebar.file_uploader(
-    '', type=['png', 'jpg', 'jpeg'], key='logo_uploader'
-)
-if logo_file:
-  st.sidebar.image(logo_file, width=150)
-
-st.sidebar.markdown('---')
 
 # --- PANEL DE CARGA (EXCLUSIVO KEY USER) ---
 if es_key_user:
@@ -143,7 +134,9 @@ archivos_cargados = (
 )
 
 # --- CUERPO PRINCIPAL ---
-st.markdown('# 🎯 Sistema Integrado de Capacitación 70/20/10 y Competencias')
+st.markdown(
+    '# 🎯 Sistema de Gestión De Desarrollo de Talento INNODEP SC'
+)
 
 if not acceso_concedido:
   st.warning(
@@ -409,7 +402,6 @@ else:
 
         with col_r2:
           st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
-          # Gráfico tipo Spider adaptado con el color #FF7600 (naranja) y #62D5B1 (menta)
           fig = px.line_polar(
               df_resultados,
               r='Nivel',
