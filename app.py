@@ -101,7 +101,7 @@ st.sidebar.markdown('---')
 
 # --- PANEL DE PERSONALIZACIÓN Y CARGA (EXCLUSIVO KEY USER) ---
 if es_key_user:
-  st.sidebar.markdown('### 🖼️ Identidad Visual e Imagen')
+  st.sidebar.markdown('### 🖼️ Identidad Visual')
 
   # Sección de Logo corporativo
   logo_file = st.sidebar.file_uploader(
@@ -115,22 +115,6 @@ if es_key_user:
     st.sidebar.markdown(
         '🏢 *Logo por defecto:* **INNODEP S.C. / DECIDO** (Sube una imagen para'
         ' reemplazarlo)'
-    )
-
-  st.sidebar.markdown('')
-
-  # Sección de Foto de Perfil
-  foto_file = st.sidebar.file_uploader(
-      'Cargar Tu Foto de Perfil', type=['png', 'jpg', 'jpeg'], key='foto_upload'
-  )
-  if foto_file:
-    st.sidebar.image(
-        foto_file, width=140, caption='Antonio Armendariz (Key User)'
-    )
-  else:
-    st.sidebar.markdown(
-        '👤 *Foto por defecto:* **Antonio Armendariz** (Sube tu foto para'
-        ' reemplazarla)'
     )
 
   st.sidebar.markdown('---')
