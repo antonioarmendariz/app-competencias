@@ -59,6 +59,10 @@ KEY_USER_EMAIL = 'antonio.armendariz@innodep.com.mx'
 if 'key_user_password' not in st.session_state:
   st.session_state.key_user_password = 'admin2026'
 
+# Control de sesión activa para permitir el botón "Salir"
+if 'sesion_iniciada' not in st.session_state:
+  st.session_state.sesion_iniciada = False
+
 # Inicializar estados en memoria si no existen
 if 'df_estructura' not in st.session_state:
   st.session_state.df_estructura = None
@@ -71,13 +75,28 @@ if 'respuestas_usuario' not in st.session_state:
 if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
 
-# --- BARRA LATERAL: IDENTIFICACIÓN Y CONTRASEÑA ---
+# --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ---
 st.sidebar.markdown('## 👤 Acceso al Sistema')
+
+# Si ya hay una sesión iniciada, mostrar botón de Salir/Cerrar Sesión
+if st.session_state.sesion_iniciada:
+  st.sidebar.success(
+      f'Sesión activa como: **{st.session_state.get("email_actual", "")}**'
+  )
+  if st.sidebar.button('🚪 Cerrar Sesión / Cambiar Perfil'):
+    st.session_state.sesion_iniciada = False
+    st.session_state.email_ingresado_temp = ''
+    st.session_state.password_ingresado_temp = ''
+    st.rerun()
+  st.sidebar.markdown('---')
+
 email_ingresado = st.sidebar.text_input(
-    'Correo corporativo:', value='antonio.armendariz@innodep.com.mx'
+    'Correo corporativo:',
+    value='antonio.armendariz@innodep.com.mx',
+    key='email_ingresado_temp',
 )
 password_ingresado = st.sidebar.text_input(
-    'Contraseña:', type='password', value=''
+    'Contraseña:', type='password', value='', key='password_ingresado_temp'
 )
 
 # Validación de acceso y roles
@@ -88,6 +107,8 @@ if email_ingresado.strip().lower() == KEY_USER_EMAIL.lower():
   if password_ingresado == st.session_state.key_user_password:
     es_key_user = True
     acceso_concedido = True
+    st.session_state.sesion_iniciada = True
+    st.session_state.email_actual = email_ingresado
     st.sidebar.success('Perfil: Key User (Antonio Armendariz)')
   else:
     if password_ingresado != '':
@@ -95,12 +116,14 @@ if email_ingresado.strip().lower() == KEY_USER_EMAIL.lower():
 else:
   if len(email_ingresado) > 5 and len(password_ingresado) > 0:
     acceso_concedido = True
+    st.session_state.sesion_iniciada = True
+    st.session_state.email_actual = email_ingresado
     st.sidebar.info('Perfil: Usuario General')
 
 st.sidebar.markdown('---')
 
 # --- PANEL DE PERSONALIZACIÓN Y CARGA (EXCLUSIVO KEY USER) ---
-if es_key_user:
+if es_key_user and st.session_state.sesion_iniciada:
   st.sidebar.markdown('### 🖼️ Identidad Visual')
 
   # Sección de Logo corporativo
@@ -159,10 +182,16 @@ if es_key_user:
       else:
         st.error('La contraseña actual es incorrecta.')
 else:
-  st.sidebar.markdown(
-      '🔒 *La sección de Carga y Parametrización está restringida'
-      ' exclusivamente al Key User con contraseña válida.*'
-  )
+  if not st.session_state.sesion_iniciada:
+    st.sidebar.markdown(
+        '🔒 *Inicia sesión con un correo y contraseña válidos para habilitar'
+        ' las funciones.*'
+    )
+  else:
+    st.sidebar.markdown(
+        '🔒 *La sección de Carga y Parametrización está restringida'
+        ' exclusivamente al Key User.*'
+    )
 
 # --- VERIFICACIÓN DE DATOS CARGADOS ---
 archivos_cargados = (
