@@ -294,7 +294,7 @@ else:
     # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
     tab_diag, tab_journey, tab_res = st.tabs([
         '📝 Autodiagnóstico de Competencias',
-        '🚀 Journey de Desarrollo Visual y Firma',
+        '🚀 Matriz y Journey de Desarrollo 70/20/10',
         '📊 Mis Resultados y Gráfico Spider',
     ])
 
@@ -348,7 +348,7 @@ else:
         with st.expander(f'📖 Ver detalles de niveles para: {comp_nombre}'):
           st.markdown(f'- **Nivel 1 (Básico):** {nivel_basico}')
           st.markdown(f'- **Nivel 2 (Intermedio):** {nivel_intermedio}')
-          st.markdown(f'- **Nivel 3 (Avanzado):** {nivel_avanzado}')
+          st.markdown(f'- **Nivel 3 (Nivel Avanzado):** {nivel_avanzado}')
 
         nivel_evaluado = st.radio(
             f'Selecciona tu nivel alcanzado en: {comp_nombre}',
@@ -374,10 +374,10 @@ else:
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Journey de Desarrollo 70/20/10 (Ruta Visual)')
+      st.markdown('### 🚀 Matriz de Desarrollo y Journey 70/20/10')
       st.write(
-          'Este es tu plan de desarrollo interactivo estructurado bajo el'
-          ' modelo 70/20/10 para potenciar tus competencias.'
+          'Plan de desarrollo estructurado con alto nivel de detalle por'
+          ' componentes de aprendizaje experiencial, social y formal.'
       )
 
       colab = st.session_state.get(
@@ -390,39 +390,62 @@ else:
       )
       st.markdown('---')
 
-      c70, c20, c10 = st.columns(3)
+      # Detalle enriquecido basado en la matriz original
+      col_m1, col_m2, col_m3 = st.columns(3)
 
-      with c70:
-        st.markdown('#### 🛠️ 70% Experiencia en el Puesto')
+      with col_m1:
+        st.markdown('#### 🛠️ 70% Experiencia Práctica (On-the-Job)')
         st.markdown(
-            'Acciones prácticas, asignación de proyectos complejos, retos y'
-            ' aprendizaje on-the-job.'
+            'Aprendizaje derivado de la ejecución directa de retos, proyectos y'
+            ' responsabilidades operativas retadoras:'
         )
-        st.success(
-            '• Liderar iniciativa clave en área.\n• Rotación de funciones'
-            ' operativas.'
-        )
-
-      with c20:
-        st.markdown('#### 👥 20% Exposición y Mentoría')
         st.markdown(
-            'Feedback continuo, sesiones de coaching con tu gerente y redes de'
-            ' colaboración.'
-        )
-        st.warning(
-            '• Sesiones de retroalimentación 1o1.\n• Mentoría con Key User o'
-            ' experto.'
+            '- Asignación como líder de proyectos estratégicos o iniciativas de'
+            ' alto impacto.\n- Rotación temporal de funciones y cobertura'
+            ' operativa clave.\n- Resolución de problemas complejos y'
+            ' resolución de incidentes críticos en campo.'
         )
 
-      with c10:
-        st.markdown('#### 📚 10% Formación Estructurada')
+      with col_m2:
+        st.markdown('#### 👥 20% Exposición y Mentoría (Social)')
         st.markdown(
-            'Cursos formales, lectura de marcos teóricos, certificaciones y'
-            ' talleres especializados.'
+            'Aprendizaje social a través de la interacción, retroalimentación'
+            ' estructurada y acompañamiento directivo:'
         )
+        st.markdown(
+            '- Sesiones de retroalimentación y coaching 1o1 periódicas con el'
+            ' gerente directo.\n- Mentoría formal con Key Users o expertos de la'
+            ' industria de la capacitación.\n- Participación activa en comités'
+            ' de trabajo y comunidades de práctica.'
+        )
+
+      with col_m3:
+        st.markdown('#### 📚 10% Formación Estructurada (Formal)')
+        st.markdown(
+            'Adquisición formal de marcos teóricos, normativas, cursos y'
+            ' especializaciones técnicas:'
+        )
+        st.markdown(
+            '- Cursos y certificaciones en plataformas de e-learning y'
+            ' autoría especializada.\n- Lectura dirigida de manuales, marcos'
+            ' conceptuales y guías operativas.\n- Talleres de especialización'
+            ' y diplomados en liderazgo y gestión.'
+        )
+
+      st.markdown('---')
+      st.markdown(
+          '### 📋 Tabla Consolidada de Acciones y Recursos del Journey'
+      )
+
+      # Si el usuario cargó la plantilla de recursos, la mostramos integrada de forma limpia
+      if st.session_state.df_recursos is not None:
+        st.dataframe(
+            st.session_state.df_recursos, use_container_width=True
+        )
+      else:
         st.info(
-            '• Cursos de especialización técnica.\n• Lectura de guías y'
-            ' normativas.'
+            'ℹ️ Puedes cargar la plantilla de recursos 70/20/10 desde el panel'
+            ' del Key User para visualizar el desglose detallado aquí.'
         )
 
       st.markdown('---')
