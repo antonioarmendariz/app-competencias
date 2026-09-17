@@ -1,9 +1,10 @@
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 # Configuración inicial de la página
 st.set_page_config(
-    page_title='Gestor de Capacitación 70/20/10 y Competencias',
+    page_title='Sistema Integrado de Capacitación 70/20/10 y Competencias',
     page_icon='🎯',
     layout='wide',
 )
@@ -35,9 +36,12 @@ es_key_user = (
 )
 
 if es_key_user:
-  st.sidebar.success(f'Perfil: Key User (Antonio Armendariz)')
+  st.sidebar.success(
+      'Perfil: Key User (Antonio Armendariz)'
+      ' #s'
+  )
 else:
-  st.sidebar.info('Perfil: Usuario General')
+  st.sidebar.info('Perfil: Usuario General #s')
 
 st.sidebar.markdown('---')
 st.sidebar.markdown('🖼️ Cargar Logo de la Empresa')
@@ -52,7 +56,7 @@ st.sidebar.markdown('---')
 # --- PANEL DE CARGA (EXCLUSIVO KEY USER) ---
 if es_key_user:
   st.sidebar.markdown('### ⚙️ Parametrización y Carga')
-  st.sidebar.markdown('*Exclusivo Key User*')
+  st.sidebar.markdown('*Exclusivo Key User* #s')
 
   file_estructura = st.sidebar.file_uploader(
       '1. Plantilla de Estructura', type=['xlsx', 'xls']
@@ -74,7 +78,7 @@ if es_key_user:
 else:
   st.sidebar.markdown(
       '🔒 *La sección de Carga y Parametrización está restringida'
-      ' exclusivamente al Key User.*'
+      ' exclusivamente al Key User.* #s'
   )
 
 # --- VERIFICACIÓN DE DATOS CARGADOS ---
@@ -86,7 +90,7 @@ archivos_cargados = (
 
 # --- CUERPO PRINCIPAL ---
 st.markdown(
-    '# 🎯 Sistema Integrado de Capacitación y Competencias'
+    '# 🎯 Sistema Integrado de Capacitación 70/20/10 y Competencias'
     ' #s'
 )
 
@@ -100,11 +104,11 @@ else:
   # Indicadores visuales de estado de archivos
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
-    st.success('✅ Plantilla Estructura: Cargada')
+    st.success('✅ Plantilla Estructura: Cargada #s')
   with col_s2:
-    st.success('✅ Plantilla Recursos: Cargada')
+    st.success('✅ Plantilla Recursos: Cargada #s')
   with col_s3:
-    st.success('✅ Plantilla Competencias: Cargada')
+    st.success('✅ Plantilla Competencias: Cargada #s')
 
   st.markdown('---')
 
@@ -118,7 +122,7 @@ else:
     ])
 
     with tab_resumen:
-      st.markdown('### 📌 Vista General del Programa')
+      st.markdown('### 📌 Vista General del Programa #s')
       c1, c2, c3 = st.columns(3)
       c1.metric(
           'Total de Roles / Puestos',
@@ -138,103 +142,185 @@ else:
       )
 
     with tab_est:
-      st.markdown('### 🏢 Estructura Organizacional')
+      st.markdown('### 🏢 Estructura Organizacional #s')
       st.dataframe(st.session_state.df_estructura, use_container_width=True)
 
     with tab_rec:
-      st.markdown('### 📈 Recursos de Capacitación 70/20/10')
+      st.markdown('### 📈 Recursos de Capacitación 70/20/10 #s')
       st.dataframe(st.session_state.df_recursos, use_container_width=True)
 
     with tab_comp:
-      st.markdown('### 💡 Modelo de Competencias')
+      st.markdown('### 💡 Modelo de Competencias #s')
       st.dataframe(st.session_state.df_competencias, use_container_width=True)
 
   else:
-    # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO Y GRÁFICOS ---
-    tab_diag, tab_res = st.tabs(
-        ['📝 Realizar Autodiagnóstico', '📊 Mis Resultados y Gráficos']
-    )
+    # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
+    tab_diag, tab_journey, tab_res = st.tabs([
+        '📝 Autodiagnóstico de Competencias',
+        '🚀 Journey de Desarrollo',
+        '📊 Mis Resultados y Gráfico Spider',
+    ])
 
     with tab_diag:
-      st.markdown(
-          '### 📝 Evaluación de Competencias'
-          ' #s'
-      )
+      st.markdown('### 📝 Evaluación y Autodiagnóstico #s')
       st.write(
-          'Selecciona tu nivel actual de dominio para cada una de las'
-          ' competencias establecidas en tu perfil #s.'
+          'Completa los datos de identificación y evalúa tu nivel de dominio'
+          ' basándote en los descriptores de cada nivel #s.'
       )
 
+      # Campos de identificación del colaborador y su gerente
+      col_id1, col_id2 = st.columns(2)
+      with col_id1:
+        nombre_colaborador = st.text_input(
+            'Nombre del Colaborador:', value='Antonio Armendariz'
+        )
+      with col_id2:
+        nombre_gerente = st.text_input(
+            'Nombre del Gerente / Líder:', value='Gerente Directo'
+        )
+
+      st.markdown('---')
+
       df_comp = st.session_state.df_competencias
-      # Iterar sobre las competencias para el formulario
       respuestas_temp = {}
+
       for idx, row in df_comp.iterrows():
         comp_nombre = (
             row.get('Competencia')
             or row.get('Nombre')
             or f'Competencia {idx+1}'
         )
-        desc = row.get('Descriptor general', 'Sin descripción')
+        desc_gral = row.get(
+            'Descriptor general', 'Sin descripción general disponible'
+        )
 
-        st.markdown(f'**{idx+1}. {comp_nombre}**')
-        st.caption(f'*{desc}*')
+        # Capturar descriptores por nivel si vienen en las columnas de la plantilla
+        nivel_basico = row.get(
+            'Nivel Básico', row.get('Básico', 'Describir nivel básico...')
+        )
+        nivel_intermedio = row.get(
+            'Nivel Intermedio',
+            row.get('Intermedio', 'Describir nivel intermedio...'),
+        )
+        nivel_avanzado = row.get(
+            'Nivel Avanzado',
+            row.get('Avanzado', 'Describir nivel avanzado...'),
+        )
 
-        # Selector de nivel (Escala del 1 al 4 o descriptiva)
-        nivel_seleccionado = st.radio(
-            f'Nivel de dominio para: {comp_nombre}',
+        st.markdown(f'#### {idx+1}. {comp_nombre}')
+        st.info(f'**Descriptor General:** {desc_gral}')
+
+        # Mostrar desglose de niveles para guía del usuario
+        with st.expander(
+            f'📖 Ver detalles de niveles para: {comp_nombre}'
+            ' #s'
+        ):
+          st.markdown(f'- **Nivel 1 (Básico):** {nivel_basico}')
+          st.markdown(f'- **Nivel 2 (Intermedio):** {nivel_intermedio}')
+          st.markdown(f'- **Nivel 3 (Avanzado):** {nivel_avanzado}')
+
+        # Selector de nivel evaluado
+        nivel_evaluado = st.radio(
+            f'Selecciona tu nivel alcanzado en: {comp_nombre}',
             options=[
-                '1 - En Desarrollo',
-                '2 - Básico',
-                '3 - Competente',
-                '4 - Avanzado / Expert',
+                '1 - Básico',
+                '2 - Intermedio',
+                '3 - Avanzado / Experto',
             ],
-            key=f'resp_{idx}',
+            key=f'resp_comp_{idx}',
             horizontal=True,
         )
-        respuestas_temp[comp_nombre] = int(nivel_seleccionado[0])
+
+        # Extraer el valor numérico del radio button seleccionado
+        respuestas_temp[comp_nombre] = int(nivel_evaluado[0])
         st.markdown('---')
 
-      if st.button('💾 Guardar y Enviar Autodiagnóstico', type='primary'):
+      if st.button('💾 Guardar Autodiagnóstico y Generar Reporte', type='primary'):
         st.session_state.respuestas_usuario = respuestas_temp
+        st.session_state.nombre_colaborador = nombre_colaborador
+        st.session_state.nombre_gerente = nombre_gerente
         st.success(
-            '¡Tus respuestas han sido guardadas exitosamente en memoria! Ve a'
-            ' la pestaña "Mis Resultados y Gráficos" para visualizar tu'
-            ' reporte.'
+            '¡Evaluación guardada con éxito! Ya puedes revisar tu Journey y el'
+            ' Gráfico Spider en las pestañas superiores #s.'
+        )
+
+    with tab_journey:
+      st.markdown('### 🚀 Journey de Desarrollo y Capacitación 70/20/10 #s')
+      st.write(
+          'Este es tu plan de ruta personalizado basado en el modelo 70/20/10'
+          ' para acelerar tu desarrollo profesional #s.'
+      )
+
+      # Mostrar información general del colaborador si ya guardó
+      colab = st.session_state.get(
+          'nombre_colaborador', 'Colaborador General'
+      )
+      ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
+      st.markdown(
+          f'**Colaborador:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; **Gerente'
+          f' Responsable:** {ger}'
+      )
+      st.markdown('---')
+
+      df_rec = st.session_state.df_recursos
+      if df_rec is not None:
+        # Mostrar desglose por componentes 70, 20 y 10 si existen columnas compatibles
+        st.dataframe(df_rec, use_container_width=True)
+      else:
+        st.info(
+            'No hay recursos de capacitación cargados en la plantilla 70/20/10.'
         )
 
     with tab_res:
-      st.markdown('### 📊 Reporte Visual de Resultados')
+      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider #s')
 
       if not st.session_state.respuestas_usuario:
-        st.info(
-            '⚠️ Aún no has completado tu autodiagnóstico. Por favor ve a la'
-            ' pestaña anterior, responde la evaluación y haz clic en guardar.'
+        st.warning(
+            '⚠️ Aún no has completado tu autodiagnóstico en la primera pestaña.'
         )
       else:
-        # Convertir respuestas a DataFrame para graficar
+        colab = st.session_state.get(
+            'nombre_colaborador', 'Colaborador General'
+        )
+        ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
+
+        st.markdown(
+            f'**Evaluación de:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; **Revisado'
+            f' por:** {ger}'
+        )
+        st.markdown('---')
+
         df_resultados = pd.DataFrame(
             list(st.session_state.respuestas_usuario.items()),
             columns=['Competencia', 'Nivel'],
         )
 
-        col_g1, col_g2 = st.columns([1, 1])
+        col_r1, col_r2 = st.columns([1, 1.2])
 
-        with col_g1:
-          st.markdown('#### Detalle de Puntuaciones')
+        with col_r1:
+          st.markdown('#### Detalle de Puntuaciones #s')
           st.dataframe(df_resultados, use_container_width=True)
+          promedio = df_resultados['Nivel'].mean()
+          st.metric('Promedio General de Dominio', f'{promedio:.2f} / 3.0')
 
-        with col_g2:
-          st.markdown('#### Gráfica de Dominio por Competencia')
-          # Gráfico de barras nativo de Streamlit
-          st.bar_chart(
-              df_resultados.set_index('Competencia'),
-              color='#1f77b4',
+        with col_r2:
+          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias) #s')
+          # Generación del gráfico tipo Spider / Radar usando Plotly
+          fig = px.line_polar(
+              df_resultados,
+              r='Nivel',
+              theta='Competencia',
+              line_close=True,
+              range_r=[0, 3],
           )
+          fig.update_traces(fill='toself', line_color='#1f77b4')
+          fig.update_layout(
+              polar=dict(radialaxis=dict(visible=True, range=[0, 3])),
+              showlegend=False,
+          )
+          st.plotly_chart(fig, use_container_width=True)
 
-        st.metric(
-            'Promedio General de Competencias',
-            f"{df_resultados['Nivel'].mean():.2f} / 4.0",
-        )
         st.success(
-            '✨ Diagnóstico completado y analizado gráficamente con éxito.'
+            '✨ Gráfico Spider generado correctamente con base en tus'
+            ' respuestas evaluadas #s.'
         )
