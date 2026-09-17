@@ -99,7 +99,6 @@ if 'journey_firmado' not in st.session_state:
 # --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ---
 st.sidebar.markdown('## 👤 Acceso al Sistema (#)')
 
-# Si ya hay una sesión iniciada, mostrar botón de Salir/Cerrar Sesión
 if st.session_state.sesion_iniciada:
   st.sidebar.success(
       f'Sesión activa como: **{st.session_state.get("email_actual", "")}** (#)'
@@ -147,7 +146,6 @@ st.sidebar.markdown('---')
 if es_key_user and st.session_state.sesion_iniciada:
   st.sidebar.markdown('### 🖼️ Identidad Visual (#)')
 
-  # Sección de Logo corporativo
   logo_file = st.sidebar.file_uploader(
       'Cargar Logo Empresa (#)', type=['png', 'jpg', 'jpeg'], key='logo_upload'
   )
@@ -240,7 +238,6 @@ elif not archivos_cargados:
       ' diagnóstico. (#)'
   )
 else:
-  # Indicadores visuales de estado de archivos
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
     st.success('✅ Plantilla Estructura: Cargada (#)')
@@ -296,7 +293,7 @@ else:
     # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
     tab_diag, tab_journey, tab_res = st.tabs([
         '📝 Autodiagnóstico de Competencias (#)',
-        '🚀 Matriz y Journey Inteligente 70/20/10 (#)',
+        '🚀 Matriz y Journey Estructurado 70/20/10 (#)',
         '📊 Mis Resultados y Gráfico Spider (#)',
     ])
 
@@ -378,17 +375,16 @@ else:
         st.session_state.nombre_gerente = nombre_gerente
         st.success(
             '¡Evaluación guardada con éxito! Ya puedes revisar tu Journey'
-            ' inteligente y el Gráfico Spider en las pestañas superiores. (#)'
+            ' estructurado y el Gráfico Spider en las pestañas superiores. (#)'
         )
 
     with tab_journey:
-      st.markdown(
-          '### 🚀 Journey de Desarrollo Personalizado y Editable (70/20/10) (#)'
-      )
+      st.markdown('### 🚀 Journey de Desarrollo Estructurado (70/20/10) (#)')
       st.write(
-          'Aquí puedes revisar las sugerencias automáticas del sistema,'
-          ' **desmarcar** acciones que no apliquen, o **agregar notas y'
-          ' actividades manuales** antes de firmar el plan definitivo. (#)'
+          'Para cada competencia en desarrollo, revisa los tres pilares'
+          ' organizados en columnas. Puedes **desmarcar** actividades que no'
+          ' apliquen, **editar sus objetivos** o **agregar actividades'
+          ' adicionales** a mano antes de firmar el plan definitivo. (#)'
       )
 
       colab = st.session_state.get(
@@ -403,9 +399,9 @@ else:
 
       if not st.session_state.respuestas_usuario:
         st.warning(
-            '⚠️ Para configurar las recomendaciones y ajustes del Journey, por'
-            ' favor completa primero tu **Autodiagnóstico de Competencias** en'
-            ' la primera pestaña y haz clic en Guardar. (#)'
+            '⚠️ Para configurar el Journey, por favor completa primero tu'
+            ' **Autodiagnóstico de Competencias** en la primera pestaña y haz'
+            ' clic en Guardar. (#)'
         )
       else:
         competencias_a_desarrollar = [
@@ -421,12 +417,6 @@ else:
               ' avanzada y proyectos de innovación. (#)'
           )
         else:
-          st.markdown(
-              '### 🛠️ Ajuste Manual y Selección de Acciones por Competencia'
-              ' (#)'
-          )
-
-          # Inicializar estructura en session_state para guardar ajustes del usuario si no existe
           if 'acciones_personalizadas' not in st.session_state:
             st.session_state.acciones_personalizadas = {}
 
@@ -438,121 +428,111 @@ else:
                 else 'Intermedio (Nivel 2) (#)'
             )
 
-            with st.expander(
-                f'🎯 Competencia: {comp} (Actual: {nivel_texto}) — Haz clic para'
-                f' desplegar y ajustar (#)',
-                expanded=True,
-            ):
-              st.markdown(
-                  'Marca o desmarca las acciones sugeridas y añade notas o'
-                  ' tareas propias: (#)'
+            st.markdown(
+                f'### 🎯 Competencia: *{comp}* &nbsp;&nbsp;|&nbsp;&nbsp; Nivel'
+                f' Actual: **{nivel_texto}** (#)'
+            )
+
+            # Estructura en 3 columnas limpias para 70, 20 y 10
+            col_70, col_20, col_10 = st.columns(3)
+
+            with col_70:
+              st.markdown('#### 🛠️ 70% Experiencia (Práctica) (#)')
+              ck_70 = st.checkbox(
+                  'Incluir actividad 70% (#)',
+                  value=True,
+                  key=f'cb_70_{comp}',
+              )
+              obj_70 = st.text_area(
+                  'Objetivo / Acción 70% (#):',
+                  value=(
+                      f'Liderar un proyecto o reto práctico on-the-job'
+                      f' enfocado en resolver situaciones reales de {comp}.'
+                  ),
+                  key=f'txt_70_{comp}',
+                  height=100,
               )
 
-              # Definir estados iniciales en session_state por competencia
-              key_70 = f'sug_70_{comp}'
-              key_20 = f'sug_20_{comp}'
-              key_10 = f'sug_10_{comp}'
-              key_extra = f'extra_{comp}'
+            with col_20:
+              st.markdown('#### 👥 20% Exposición (Social) (#)')
+              ck_20 = st.checkbox(
+                  'Incluir actividad 20% (#)',
+                  value=True,
+                  key=f'cb_20_{comp}',
+              )
+              obj_20 = st.text_area(
+                  'Objetivo / Acción 20% (#):',
+                  value=(
+                      f'Sesión de mentoría y feedback 1o1 con {ger} para'
+                      f' revisar avances y mejores prácticas en {comp}.'
+                  ),
+                  key=f'txt_20_{comp}',
+                  height=100,
+              )
 
-              if key_70 not in st.session_state:
-                st.session_state[key_70] = True
-              if key_20 not in st.session_state:
-                st.session_state[key_20] = True
-              if key_10 not in st.session_state:
-                st.session_state[key_10] = True
+            with col_10:
+              st.markdown('#### 📚 10% Formación (Formal) (#)')
+              ck_10 = st.checkbox(
+                  'Incluir actividad 10% (#)',
+                  value=True,
+                  key=f'cb_10_{comp}',
+              )
+              obj_10 = st.text_area(
+                  'Objetivo / Acción 10% (#):',
+                  value=(
+                      f'Revisión de guías técnicas, lecturas especializadas o'
+                      f' curso digital sobre {comp}.'
+                  ),
+                  key=f'txt_10_{comp}',
+                  height=100,
+              )
 
-              col_a, col_b, col_c = st.columns(3)
-
-              with col_a:
-                st.markdown('**70% Experiencia Práctica (#)**')
-                accion_70_activa = st.checkbox(
-                    'Incluir proyecto práctico on-the-job (#)',
-                    value=st.session_state[key_70],
-                    key=f'cb_70_{comp}',
-                )
-                texto_70 = st.text_input(
-                    'Detalle 70% (#):',
-                    value=(
-                        f'Liderar mini-proyecto enfocado en resolver retos de'
-                        f' {comp}'
-                    ),
-                    key=f'txt_70_{comp}',
-                )
-
-              with col_b:
-                st.markdown('**20% Exposición y Mentoría (#)**')
-                accion_20_activa = st.checkbox(
-                    'Incluir sesión de feedback y coaching (#)',
-                    value=st.session_state[key_20],
-                    key=f'cb_20_{comp}',
-                )
-                texto_20 = st.text_input(
-                    'Detalle 20% (#):',
-                    value=(
-                        f'Sesión de retroalimentación 1o1 con {ger} sobre'
-                        f' {comp}'
-                    ),
-                    key=f'txt_20_{comp}',
-                )
-
-              with col_c:
-                st.markdown('**10% Formación Formal (#)**')
-                accion_10_activa = st.checkbox(
-                    'Incluir curso o lectura estructurada (#)',
-                    value=st.session_state[key_10],
-                    key=f'cb_10_{comp}',
-                )
-                texto_10 = st.text_input(
-                    'Detalle 10% (#):',
-                    value=(
-                        f'Revisión de guías técnicas y autoestudio sobre {comp}'
-                    ),
-                    key=f'txt_10_{comp}',
-                )
-
-              st.markdown('**✏️ Añadir Acción Manual Adicional:**')
-              accion_manual_extra = st.text_input(
-                  f'Escribe aquí cualquier otra actividad libre para {comp} (#):',
+            # Sección para agregar actividad manual adicional por competencia
+            with st.expander(
+                f'➕ Agregar actividad manual adicional para: {comp} (#)'
+            ):
+              obj_manual = st.text_input(
+                  'Descripción de la actividad extra (#):',
                   value='',
                   key=f'manual_extra_{comp}',
                   placeholder=(
-                      'Ej. Participar en taller externo o certificarme en...'
+                      'Ej. Certificación externa, asistencia a taller, etc.'
                   ),
               )
 
-              # Guardar configuración ajustada
-              st.session_state.acciones_personalizadas[comp] = {
-                  '70_activo': accion_70_activa,
-                  '70_desc': texto_70,
-                  '20_activo': accion_20_activa,
-                  '20_desc': texto_20,
-                  '10_activo': accion_10_activa,
-                  '10_desc': texto_10,
-                  'extra': accion_manual_extra,
-              }
+            # Guardar configuración en memoria
+            st.session_state.acciones_personalizadas[comp] = {
+                '70_activo': ck_70,
+                '70_desc': obj_70,
+                '20_activo': ck_20,
+                '20_desc': obj_20,
+                '10_activo': ck_10,
+                '10_desc': obj_10,
+                'extra': obj_manual,
+            }
 
-          st.markdown('---')
+            st.markdown('---')
 
       st.markdown('### ✍️ Validación y Firma Digital del Journey (#)')
 
       col_f1, col_f2 = st.columns(2)
       with col_f1:
         firma_colab = st.checkbox(
-            f'Acepto y valido mi plan de desarrollo personalizado ({colab}) (#)',
+            f'Acepto y valido mi plan estructurado ({colab}) (#)',
             value=st.session_state.journey_firmado,
         )
       with col_f2:
         firma_gerente = st.checkbox(
-            f'Aprobar plan de desarrollo como líder/gerente ({ger}) (#)',
+            f'Aprobar plan estructurado como líder/gerente ({ger}) (#)',
             value=st.session_state.journey_firmado,
         )
 
       if firma_colab and firma_gerente:
         st.session_state.journey_firmado = True
         st.success(
-            '✅ **¡Journey Personalizado, Firmado y Validado Exitosamente por'
-            ' Ambas Partes!** Tus ajustes manuales han quedado guardados en el'
-            ' sistema. (#)'
+            '✅ **¡Journey Estructurado, Firmado y Validado Exitosamente por'
+            ' Ambas Partes!** Tus ajustes y actividades manuales se han'
+            ' registrado correctamente. (#)'
         )
       else:
         st.warning(
@@ -596,11 +576,11 @@ else:
           )
           if st.session_state.journey_firmado:
             st.success(
-                '🔒 Estatus: Journey Personalizado, Firmado y Validado (#)'
+                '🔒 Estatus: Journey Estructurado, Firmado y Validado (#)'
             )
           else:
             st.warning(
-                '🔓 Estatus: Pendiente de Ajustar y Firmar Journey (#)'
+                '🔓 Estatus: Pendiente de Estructurar y Firmar Journey (#)'
             )
 
         with col_r2:
