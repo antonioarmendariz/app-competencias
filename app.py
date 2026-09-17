@@ -54,9 +54,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Credenciales de acceso
+# Credenciales de acceso y gestión en session_state para permitir cambios
 KEY_USER_EMAIL = 'antonio.armendariz@innodep.com.mx'
-KEY_USER_PASSWORD = 'admin2026'
+if 'key_user_password' not in st.session_state:
+  st.session_state.key_user_password = 'admin2026'
 
 # Inicializar estados en memoria si no existen
 if 'df_estructura' not in st.session_state:
@@ -84,7 +85,7 @@ es_key_user = False
 acceso_concedido = False
 
 if email_ingresado.strip().lower() == KEY_USER_EMAIL.lower():
-  if password_ingresado == KEY_USER_PASSWORD:
+  if password_ingresado == st.session_state.key_user_password:
     es_key_user = True
     acceso_concedido = True
     st.sidebar.success('Perfil: Key User (Antonio Armendariz)')
@@ -98,14 +99,39 @@ else:
 
 st.sidebar.markdown('---')
 
-# --- PANEL DE CARGA Y LOGOTIPO (EXCLUSIVO KEY USER) ---
+# --- PANEL DE PERSONALIZACIÓN Y CARGA (EXCLUSIVO KEY USER) ---
 if es_key_user:
-  st.sidebar.markdown('### 🖼️ Personalización')
+  st.sidebar.markdown('### 🖼️ Identidad Visual e Imagen')
+
+  # Sección de Logo corporativo
   logo_file = st.sidebar.file_uploader(
-      'Cargar Logo o Foto Corporativa', type=['png', 'jpg', 'jpeg']
+      'Cargar Logo Empresa', type=['png', 'jpg', 'jpeg'], key='logo_upload'
   )
   if logo_file:
-    st.sidebar.image(logo_file, width=150)
+    st.sidebar.image(
+        logo_file, width=160, caption='Logotipo de la Empresa'
+    )
+  else:
+    st.sidebar.markdown(
+        '🏢 *Logo por defecto:* **INNODEP S.C. / DECIDO** (Sube una imagen para'
+        ' reemplazarlo)'
+    )
+
+  st.sidebar.markdown('')
+
+  # Sección de Foto de Perfil
+  foto_file = st.sidebar.file_uploader(
+      'Cargar Tu Foto de Perfil', type=['png', 'jpg', 'jpeg'], key='foto_upload'
+  )
+  if foto_file:
+    st.sidebar.image(
+        foto_file, width=140, caption='Antonio Armendariz (Key User)'
+    )
+  else:
+    st.sidebar.markdown(
+        '👤 *Foto por defecto:* **Antonio Armendariz** (Sube tu foto para'
+        ' reemplazarla)'
+    )
 
   st.sidebar.markdown('---')
   st.sidebar.markdown('### ⚙️ Parametrización y Carga')
@@ -128,6 +154,26 @@ if es_key_user:
   )
   if file_competencias:
     st.session_state.df_competencias = pd.read_excel(file_competencias)
+
+  st.sidebar.markdown('---')
+  with st.sidebar.expander('⚙️ Settings / Cambiar Contraseña'):
+    pass_actual = st.text_input(
+        'Contraseña Actual:', type='password', key='p_act'
+    )
+    pass_nuevo = st.text_input(
+        'Nueva Contraseña:', type='password', key='p_new'
+    )
+    if st.button('Actualizar Contraseña'):
+      if pass_actual == st.session_state.key_user_password:
+        if len(pass_nuevo) >= 4:
+          st.session_state.key_user_password = pass_nuevo
+          st.success(
+              '¡Contraseña actualizada con éxito! Úsala en tu próximo acceso.'
+          )
+        else:
+          st.error('La nueva contraseña debe tener al menos 4 caracteres.')
+      else:
+        st.error('La contraseña actual es incorrecta.')
 else:
   st.sidebar.markdown(
       '🔒 *La sección de Carga y Parametrización está restringida'
