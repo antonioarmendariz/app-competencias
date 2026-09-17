@@ -98,8 +98,16 @@ else:
 
 st.sidebar.markdown('---')
 
-# --- PANEL DE CARGA (EXCLUSIVO KEY USER) ---
+# --- PANEL DE CARGA Y LOGOTIPO (EXCLUSIVO KEY USER) ---
 if es_key_user:
+  st.sidebar.markdown('### 🖼️ Personalización')
+  logo_file = st.sidebar.file_uploader(
+      'Cargar Logo o Foto Corporativa', type=['png', 'jpg', 'jpeg']
+  )
+  if logo_file:
+    st.sidebar.image(logo_file, width=150)
+
+  st.sidebar.markdown('---')
   st.sidebar.markdown('### ⚙️ Parametrización y Carga')
   st.sidebar.markdown('*Exclusivo Key User*')
 
@@ -416,7 +424,7 @@ else:
           )
           fig.update_layout(
               polar=dict(
-                  radialaxis=dict(visible=True, range=[0, 3]),
+                  radialaxis=dict(visible=True, range=[0, 3], color='#2F3F47'),
                   bgcolor='#FFFFFF',
               ),
               paper_bgcolor='#FFFFFF',
