@@ -21,6 +21,8 @@ if 'df_competencias' not in st.session_state:
   st.session_state.df_competencias = None
 if 'respuestas_usuario' not in st.session_state:
   st.session_state.respuestas_usuario = {}
+if 'journey_firmado' not in st.session_state:
+  st.session_state.journey_firmado = False
 
 # --- BARRA LATERAL: IDENTIFICACIÓN Y CONFIGURACIÓN ---
 st.sidebar.markdown('## 👤 Identificación de Usuario')
@@ -90,7 +92,7 @@ archivos_cargados = (
 
 # --- CUERPO PRINCIPAL ---
 st.markdown(
-    '# 🎯 Sistema Integrado de Capacitación 70/20/10 y Competencias'
+    '# 🎯 Sistema Integrado de Capacitación y Competencias'
     ' #s'
 )
 
@@ -157,7 +159,7 @@ else:
     # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
     tab_diag, tab_journey, tab_res = st.tabs([
         '📝 Autodiagnóstico de Competencias',
-        '🚀 Journey de Desarrollo',
+        '🚀 Journey de Desarrollo Visual y Firma',
         '📊 Mis Resultados y Gráfico Spider',
     ])
 
@@ -194,7 +196,6 @@ else:
             'Descriptor general', 'Sin descripción general disponible'
         )
 
-        # Capturar descriptores por nivel si vienen en las columnas de la plantilla
         nivel_basico = row.get(
             'Nivel Básico', row.get('Básico', 'Describir nivel básico...')
         )
@@ -210,7 +211,6 @@ else:
         st.markdown(f'#### {idx+1}. {comp_nombre}')
         st.info(f'**Descriptor General:** {desc_gral}')
 
-        # Mostrar desglose de niveles para guía del usuario
         with st.expander(
             f'📖 Ver detalles de niveles para: {comp_nombre}'
             ' #s'
@@ -219,7 +219,6 @@ else:
           st.markdown(f'- **Nivel 2 (Intermedio):** {nivel_intermedio}')
           st.markdown(f'- **Nivel 3 (Avanzado):** {nivel_avanzado}')
 
-        # Selector de nivel evaluado
         nivel_evaluado = st.radio(
             f'Selecciona tu nivel alcanzado en: {comp_nombre}',
             options=[
@@ -231,7 +230,6 @@ else:
             horizontal=True,
         )
 
-        # Extraer el valor numérico del radio button seleccionado
         respuestas_temp[comp_nombre] = int(nivel_evaluado[0])
         st.markdown('---')
 
@@ -245,30 +243,83 @@ else:
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Journey de Desarrollo y Capacitación 70/20/10 #s')
+      st.markdown('### 🚀 Journey de Desarrollo 70/20/10 (Ruta Visual) #s')
       st.write(
-          'Este es tu plan de ruta personalizado basado en el modelo 70/20/10'
-          ' para acelerar tu desarrollo profesional #s.'
+          'Este es tu plan de desarrollo interactivo estructurado bajo el'
+          ' modelo 70/20/10 para potenciar tus competencias #s.'
       )
 
-      # Mostrar información general del colaborador si ya guardó
       colab = st.session_state.get(
-          'nombre_colaborador', 'Colaborador General'
+          'nombre_colaborador', 'Antonio Armendariz'
       )
       ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
-      st.markdown(
-          f'**Colaborador:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; **Gerente'
-          f' Responsable:** {ger}'
+      st.info(
+          f'👤 **Colaborador:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; 👔'
+          f' **Gerente Responsable:** {ger}'
       )
       st.markdown('---')
 
-      df_rec = st.session_state.df_recursos
-      if df_rec is not None:
-        # Mostrar desglose por componentes 70, 20 y 10 si existen columnas compatibles
-        st.dataframe(df_rec, use_container_width=True)
-      else:
+      # Renderizado visual en tarjetas por pilar 70/20/10
+      c70, c20, c10 = st.columns(3)
+
+      with c70:
+        st.markdown('#### 🛠️ 70% Experiencia en el Puesto')
+        st.markdown(
+            'Acciones prácticas, asignación de proyectos complejos, retos y'
+            ' aprendizaje on-the-job.'
+        )
+        st.success(
+            '• Liderar iniciativa clave en área.\n• Rotación de funciones'
+            ' operativas.'
+        )
+
+      with c20:
+        st.markdown('#### 👥 20% Exposición y Mentoría')
+        st.markdown(
+            'Feedback continuo, sesiones de coaching con tu gerente y redes de'
+            ' colaboración.'
+        )
+        st.warning(
+            '• Sesiones de retroalimentación 1o1.\n• Mentoría con Key User o'
+            ' experto.'
+        )
+
+      with c10:
+        st.markdown('#### 📚 10% Formación Estructurada')
+        st.markdown(
+            'Cursos formales, lectura de marcos teóricos, certificaciones y'
+            ' talleres especializados.'
+        )
         st.info(
-            'No hay recursos de capacitación cargados en la plantilla 70/20/10.'
+            '• Cursos de especialización técnica.\n• Lectura de guías y'
+            ' normativas.'
+        )
+
+      st.markdown('---')
+      st.markdown('### ✍️ Validación y Firma Digital del Journey')
+
+      col_f1, col_f2 = st.columns(2)
+      with col_f1:
+        firma_colab = st.checkbox(
+            f'Acepto y valido mi plan de desarrollo ({colab})',
+            value=st.session_state.journey_firmado,
+        )
+      with col_f2:
+        firma_gerente = st.checkbox(
+            f'Aprobar plan de desarrollo como líder/gerente ({ger})',
+            value=st.session_state.journey_firmado,
+        )
+
+      if firma_colab and firma_gerente:
+        st.session_state.journey_firmado = True
+        st.success(
+            '✅ **¡Journey Firmado y Validado Exitosamente por Ambas Partes!**'
+            ' El plan está oficialmente activo en el sistema.'
+        )
+      else:
+        st.warning(
+            '⚠️ Ambas partes (Colaborador y Gerente) deben marcar la casilla'
+            ' de aceptación para formalizar la firma del Journey.'
         )
 
     with tab_res:
@@ -302,10 +353,13 @@ else:
           st.dataframe(df_resultados, use_container_width=True)
           promedio = df_resultados['Nivel'].mean()
           st.metric('Promedio General de Dominio', f'{promedio:.2f} / 3.0')
+          if st.session_state.journey_firmado:
+            st.success('🔒 Estatus: Journey Firmado y Validado')
+          else:
+            st.warning('🔓 Estatus: Pendiente de Firmar Journey')
 
         with col_r2:
           st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias) #s')
-          # Generación del gráfico tipo Spider / Radar usando Plotly
           fig = px.line_polar(
               df_resultados,
               r='Nivel',
