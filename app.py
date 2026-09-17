@@ -9,8 +9,55 @@ st.set_page_config(
     layout='wide',
 )
 
-# Constantes de configuración
+# --- APLICACIÓN DE PALETA DE COLORES CORPORATIVA ---
+# #2F3F47 (Gris oscuro / Principal), #62D5B1 (Verde menta / Acento), #FF7600 (Naranja / Destacados), #FFFFFF (Blanco)
+st.markdown(
+    """
+    <style>
+    /* Estilos globales y tipografía */
+    .stApp {
+        background-color: #FFFFFF;
+        color: #2F3F47;
+    }
+    
+    /* Encabezados y títulos */
+    h1, h2, h3, h4, h5, h6 {
+        color: #2F3F47 !important;
+    }
+    
+    /* Botones principales */
+    .stButton>button {
+        background-color: #62D5B1 !important;
+        color: #2F3F47 !important;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+    }
+    .stButton>button:hover {
+        background-color: #FF7600 !important;
+        color: #FFFFFF !important;
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #2F3F47;
+    }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
+        color: #FFFFFF !important;
+    }
+    
+    /* Métricas y tarjetas de estado */
+    [data-testid="stMetricValue"] {
+        color: #FF7600 !important;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+# Credenciales de acceso
 KEY_USER_EMAIL = 'antonio.armendariz@innodep.com.mx'
+KEY_USER_PASSWORD = 'admin2026'
 
 # Inicializar estados en memoria si no existen
 if 'df_estructura' not in st.session_state:
@@ -24,26 +71,31 @@ if 'respuestas_usuario' not in st.session_state:
 if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
 
-# --- BARRA LATERAL: IDENTIFICACIÓN Y CONFIGURACIÓN ---
-st.sidebar.markdown('## 👤 Identificación de Usuario')
+# --- BARRA LATERAL: IDENTIFICACIÓN Y CONTRASEÑA ---
+st.sidebar.markdown('## 👤 Acceso al Sistema')
 email_ingresado = st.sidebar.text_input(
-    'Ingresa tu correo corporativo:', value='antonio.armendariz@innodep.com.mx'
+    'Correo corporativo:', value='antonio.armendariz@innodep.com.mx'
+)
+password_ingresado = st.sidebar.text_input(
+    'Contraseña:', type='password', value=''
 )
 
-# Validación de roles
-es_key_user = (
-    email_ingresado.strip().lower() == KEY_USER_EMAIL.lower()
-    if email_ingresado
-    else False
-)
+# Validación de acceso y roles
+es_key_user = False
+acceso_concedido = False
 
-if es_key_user:
-  st.sidebar.success(
-      'Perfil: Key User (Antonio Armendariz)'
-      ' #s'
-  )
+if email_ingresado.strip().lower() == KEY_USER_EMAIL.lower():
+  if password_ingresado == KEY_USER_PASSWORD:
+    es_key_user = True
+    acceso_concedido = True
+    st.sidebar.success('Perfil: Key User (Antonio Armendariz)')
+  else:
+    if password_ingresado != '':
+      st.sidebar.error('Contraseña de Key User incorrecta.')
 else:
-  st.sidebar.info('Perfil: Usuario General #s')
+  if len(email_ingresado) > 5 and len(password_ingresado) > 0:
+    acceso_concedido = True
+    st.sidebar.info('Perfil: Usuario General')
 
 st.sidebar.markdown('---')
 st.sidebar.markdown('🖼️ Cargar Logo de la Empresa')
@@ -58,7 +110,7 @@ st.sidebar.markdown('---')
 # --- PANEL DE CARGA (EXCLUSIVO KEY USER) ---
 if es_key_user:
   st.sidebar.markdown('### ⚙️ Parametrización y Carga')
-  st.sidebar.markdown('*Exclusivo Key User* #s')
+  st.sidebar.markdown('*Exclusivo Key User*')
 
   file_estructura = st.sidebar.file_uploader(
       '1. Plantilla de Estructura', type=['xlsx', 'xls']
@@ -80,7 +132,7 @@ if es_key_user:
 else:
   st.sidebar.markdown(
       '🔒 *La sección de Carga y Parametrización está restringida'
-      ' exclusivamente al Key User.* #s'
+      ' exclusivamente al Key User con contraseña válida.*'
   )
 
 # --- VERIFICACIÓN DE DATOS CARGADOS ---
@@ -91,26 +143,28 @@ archivos_cargados = (
 )
 
 # --- CUERPO PRINCIPAL ---
-st.markdown(
-    '# 🎯 Sistema Integrado de Capacitación y Competencias'
-    ' #s'
-)
+st.markdown('# 🎯 Sistema Integrado de Capacitación 70/20/10 y Competencias')
 
-if not archivos_cargados:
+if not acceso_concedido:
   st.warning(
-      '⚠️ Por favor, espera a que el Key User cargue las plantillas maestras'
-      ' correspondientes en el sistema para habilitar las vistas y el'
-      ' diagnóstico #s.'
+      '⚠️ Por favor, ingresa tu correo y contraseña válidos en la barra lateral'
+      ' para acceder al sistema.'
+  )
+elif not archivos_cargados:
+  st.warning(
+      '⚠️ El acceso es correcto, pero espera a que el Key User cargue las'
+      ' plantillas maestras en el sistema para habilitar las vistas y el'
+      ' diagnóstico.'
   )
 else:
   # Indicadores visuales de estado de archivos
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
-    st.success('✅ Plantilla Estructura: Cargada #s')
+    st.success('✅ Plantilla Estructura: Cargada')
   with col_s2:
-    st.success('✅ Plantilla Recursos: Cargada #s')
+    st.success('✅ Plantilla Recursos: Cargada')
   with col_s3:
-    st.success('✅ Plantilla Competencias: Cargada #s')
+    st.success('✅ Plantilla Competencias: Cargada')
 
   st.markdown('---')
 
@@ -124,7 +178,7 @@ else:
     ])
 
     with tab_resumen:
-      st.markdown('### 📌 Vista General del Programa #s')
+      st.markdown('### 📌 Vista General del Programa')
       c1, c2, c3 = st.columns(3)
       c1.metric(
           'Total de Roles / Puestos',
@@ -140,19 +194,19 @@ else:
       )
       st.success(
           '🎉 Las tres plantillas han sido cargadas exitosamente y se'
-          ' encuentran consolidadas en memoria #s.'
+          ' encuentran consolidadas en memoria.'
       )
 
     with tab_est:
-      st.markdown('### 🏢 Estructura Organizacional #s')
+      st.markdown('### 🏢 Estructura Organizacional')
       st.dataframe(st.session_state.df_estructura, use_container_width=True)
 
     with tab_rec:
-      st.markdown('### 📈 Recursos de Capacitación 70/20/10 #s')
+      st.markdown('### 📈 Recursos de Capacitación 70/20/10')
       st.dataframe(st.session_state.df_recursos, use_container_width=True)
 
     with tab_comp:
-      st.markdown('### 💡 Modelo de Competencias #s')
+      st.markdown('### 💡 Modelo de Competencias')
       st.dataframe(st.session_state.df_competencias, use_container_width=True)
 
   else:
@@ -164,13 +218,12 @@ else:
     ])
 
     with tab_diag:
-      st.markdown('### 📝 Evaluación y Autodiagnóstico #s')
+      st.markdown('### 📝 Evaluación y Autodiagnóstico')
       st.write(
           'Completa los datos de identificación y evalúa tu nivel de dominio'
-          ' basándote en los descriptores de cada nivel #s.'
+          ' basándote en los descriptores de cada nivel.'
       )
 
-      # Campos de identificación del colaborador y su gerente
       col_id1, col_id2 = st.columns(2)
       with col_id1:
         nombre_colaborador = st.text_input(
@@ -211,10 +264,7 @@ else:
         st.markdown(f'#### {idx+1}. {comp_nombre}')
         st.info(f'**Descriptor General:** {desc_gral}')
 
-        with st.expander(
-            f'📖 Ver detalles de niveles para: {comp_nombre}'
-            ' #s'
-        ):
+        with st.expander(f'📖 Ver detalles de niveles para: {comp_nombre}'):
           st.markdown(f'- **Nivel 1 (Básico):** {nivel_basico}')
           st.markdown(f'- **Nivel 2 (Intermedio):** {nivel_intermedio}')
           st.markdown(f'- **Nivel 3 (Avanzado):** {nivel_avanzado}')
@@ -239,14 +289,14 @@ else:
         st.session_state.nombre_gerente = nombre_gerente
         st.success(
             '¡Evaluación guardada con éxito! Ya puedes revisar tu Journey y el'
-            ' Gráfico Spider en las pestañas superiores #s.'
+            ' Gráfico Spider en las pestañas superiores.'
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Journey de Desarrollo 70/20/10 (Ruta Visual) #s')
+      st.markdown('### 🚀 Journey de Desarrollo 70/20/10 (Ruta Visual)')
       st.write(
           'Este es tu plan de desarrollo interactivo estructurado bajo el'
-          ' modelo 70/20/10 para potenciar tus competencias #s.'
+          ' modelo 70/20/10 para potenciar tus competencias.'
       )
 
       colab = st.session_state.get(
@@ -259,7 +309,6 @@ else:
       )
       st.markdown('---')
 
-      # Renderizado visual en tarjetas por pilar 70/20/10
       c70, c20, c10 = st.columns(3)
 
       with c70:
@@ -323,7 +372,7 @@ else:
         )
 
     with tab_res:
-      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider #s')
+      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider')
 
       if not st.session_state.respuestas_usuario:
         st.warning(
@@ -349,7 +398,7 @@ else:
         col_r1, col_r2 = st.columns([1, 1.2])
 
         with col_r1:
-          st.markdown('#### Detalle de Puntuaciones #s')
+          st.markdown('#### Detalle de Puntuaciones')
           st.dataframe(df_resultados, use_container_width=True)
           promedio = df_resultados['Nivel'].mean()
           st.metric('Promedio General de Dominio', f'{promedio:.2f} / 3.0')
@@ -359,7 +408,8 @@ else:
             st.warning('🔓 Estatus: Pendiente de Firmar Journey')
 
         with col_r2:
-          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias) #s')
+          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
+          # Gráfico tipo Spider adaptado con el color #FF7600 (naranja) y #62D5B1 (menta)
           fig = px.line_polar(
               df_resultados,
               r='Nivel',
@@ -367,14 +417,21 @@ else:
               line_close=True,
               range_r=[0, 3],
           )
-          fig.update_traces(fill='toself', line_color='#1f77b4')
+          fig.update_traces(
+              fill='toself',
+              line_color='#FF7600',
+              fillcolor='rgba(98, 213, 177, 0.4)',
+          )
           fig.update_layout(
-              polar=dict(radialaxis=dict(visible=True, range=[0, 3])),
+              polar=dict(
+                  radialaxis=dict(visible=True, range=[0, 3]),
+                  bgcolor='#FFFFFF',
+              ),
+              paper_bgcolor='#FFFFFF',
+              plot_bgcolor='#FFFFFF',
+              font=dict(color='#2F3F47'),
               showlegend=False,
           )
           st.plotly_chart(fig, use_container_width=True)
 
-        st.success(
-            '✨ Gráfico Spider generado correctamente con base en tus'
-            ' respuestas evaluadas #s.'
-        )
+        st.success('✨ Gráfico Spider generado correctamente.')
