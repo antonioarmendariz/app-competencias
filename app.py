@@ -453,12 +453,13 @@ else:
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Ruta de Desarrollo 70/20/10 (Matriz Ejecutiva)')
+      st.markdown(
+          '### 🚀 Ruta de Desarrollo 70/20/10 (One-Pager Ejecutivo)'
+      )
       st.write(
-          'Matriz dinámica consolidada con las acciones de desarrollo para'
-          ' tus áreas de oportunidad. Puedes editar directamente los objetivos'
-          ' de 70%, 20% y 10% en cada fila antes de validar y firmar el plan'
-          ' definitivo.'
+          'Selecciona hasta 4 competencias prioritarias definidas por el'
+          ' gerente. Despliega cada bloque para configurar los detalles del'
+          ' modelo 70/20/10 en un formato compacto.'
       )
 
       colab = st.session_state.get(
@@ -479,98 +480,119 @@ else:
             ' pestaña y haz clic en Guardar.'
         )
       else:
-        competencias_a_desarrollar = [
+        # Obtener competencias que están en desarrollo (nivel < 3)
+        competencias_en_desarrollo = [
             comp
             for comp, nivel in st.session_state.respuestas_usuario.items()
             if nivel < 3
         ]
 
-        if not competencias_a_desarrollar:
+        if not competencias_en_desarrollo:
           st.success(
               '🎉 ¡Felicidades! Has alcanzado el nivel avanzado en todas tus'
               ' competencias evaluadas. Tu enfoque se centrará en mentoría'
               ' avanzada y proyectos de innovación.'
           )
         else:
-          if 'acciones_matriz_dinamica' not in st.session_state:
-            st.session_state.acciones_matriz_dinamica = {}
+          st.markdown('#### 🎯 Selección de Competencias Prioritarias')
+          competencias_prioritarias = st.multiselect(
+              'Elige las competencias prioritarias a desarrollar (máximo 4):',
+              options=competencias_en_desarrollo,
+              default=competencias_en_desarrollo[
+                  : min(4, len(competencias_en_desarrollo))
+              ],
+          )
 
-          # Renderizar como tabla dinámica ejecutiva estructurada por filas/columnas
-          for comp in competencias_a_desarrollar:
-            nivel_actual = st.session_state.respuestas_usuario[comp]
-            nivel_texto = (
-                'Básico (Nivel 1)'
-                if nivel_actual == 1
-                else 'Intermedio (Nivel 2)'
+          if len(competencias_prioritarias) > 4:
+            st.error(
+                '⚠️ Por favor, selecciona un máximo de 4 competencias'
+                ' prioritarias para mantener el enfoque del One-Pager.'
             )
+          elif not competencias_prioritarias:
+            st.warning('⚠️ Selecciona al menos una competencia prioritaria.')
+          else:
+            if 'acciones_one_pager' not in st.session_state:
+              st.session_state.acciones_one_pager = {}
 
-            defaults = st.session_state.acciones_matriz_dinamica.get(
-                comp,
-                {
-                    '70': f'Liderar proyecto o reto práctico en {comp}.',
-                    '20': f'Sesión de mentoría y feedback con {ger}.',
-                    '10': f'Curso digital o lectura técnica sobre {comp}.',
-                },
-            )
-
-            st.markdown(
-                f'#### 📌 Competencia: *{comp}* &nbsp;&nbsp;|&nbsp;&nbsp; Nivel'
-                f' Actual: **{nivel_texto}**'
-            )
-
-            # Estructura tabular limpia de matriz ejecutiva
-            mc1, mc2, mc3 = st.columns(3)
-            with mc1:
-              val_70 = st.text_input(
-                  '🛠️ Acción 70% (Experiencia):',
-                  value=defaults['70'],
-                  key=f'dyn_70_{comp}',
-              )
-            with mc2:
-              val_20 = st.text_input(
-                  '👥 Acción 20% (Exposición):',
-                  value=defaults['20'],
-                  key=f'dyn_20_{comp}',
-              )
-            with mc3:
-              val_10 = st.text_input(
-                  '📚 Acción 10% (Formación):',
-                  value=defaults['10'],
-                  key=f'dyn_10_{comp}',
-              )
-
-            st.session_state.acciones_matriz_dinamica[comp] = {
-                '70': val_70,
-                '20': val_20,
-                '10': val_10,
-            }
             st.markdown('---')
+            st.markdown('#### 📋 Matriz Detallada (One-Pager)')
 
-      st.markdown('### ✍️ Validación y Firma Digital del Plan')
+            for comp in competencias_prioritarias:
+              nivel_actual = st.session_state.respuestas_usuario[comp]
+              nivel_texto = (
+                  'Básico (Nivel 1)'
+                  if nivel_actual == 1
+                  else 'Intermedio (Nivel 2)'
+              )
 
-      col_f1, col_f2 = st.columns(2)
-      with col_f1:
-        firma_colab = st.checkbox(
-            f'Acepto y valido mi matriz de desarrollo ({colab})',
-            value=st.session_state.journey_firmado,
-        )
-      with col_f2:
-        firma_gerente = st.checkbox(
-            f'Aprobar matriz como líder/gerente ({ger})',
-            value=st.session_state.journey_firmado,
-        )
+              defaults = st.session_state.acciones_one_pager.get(
+                  comp,
+                  {
+                      '70': f'Liderar proyecto o reto práctico en {comp}.',
+                      '20': f'Sesión de mentoría y feedback con {ger}.',
+                      '10': f'Curso digital o lectura técnica sobre {comp}.',
+                  },
+              )
 
-      if firma_colab and firma_gerente:
-        st.session_state.journey_firmado = True
-        st.success(
-            '✅ **¡Matriz Ejecutiva de Desarrollo Validada y Firmada Exitosamente'
-            ' por Ambas Partes!**'
-        )
-      else:
-        st.warning(
-            '⚠️ Ambas partes deben marcar la casilla de aceptación para'
-            ' formalizar la firma definitiva.'
-        )
+              # Desplegable individual por competencia
+              with st.expander(
+                  f'📌 {comp} — Nivel Actual: {nivel_texto}', expanded=True
+              ):
+                col_op1, col_op2, col_op3 = st.columns(3)
+                with col_op1:
+                  val_70 = st.text_area(
+                      f'🛠️ 70% Experiencia:',
+                      value=defaults['70'],
+                      key=f'one_70_{comp}',
+                      height=70,
+                  )
+                with col_op2:
+                  val_20 = st.text_area(
+                      f'👥 20% Exposición:',
+                      value=defaults['20'],
+                      key=f'one_20_{comp}',
+                      height=70,
+                  )
+                with col_op3:
+                  val_10 = st.text_area(
+                      f'📚 10% Formación:',
+                      value=defaults['10'],
+                      key=f'one_10_{comp}',
+                      height=70,
+                  )
+
+                st.session_state.acciones_one_pager[comp] = {
+                    '70': val_70,
+                    '20': val_20,
+                    '10': val_10,
+                }
+
+            st.markdown('---')
+            st.markdown('### ✍️ Validación y Firma Digital del Plan')
+
+            col_f1, col_f2 = st.columns(2)
+            with col_f1:
+              firma_colab = st.checkbox(
+                  f'Acepto y valido mi ruta One-Pager ({colab})',
+                  value=st.session_state.journey_firmado,
+              )
+            with col_f2:
+              firma_gerente = st.checkbox(
+                  f'Aprobar ruta como líder/gerente ({ger})',
+                  value=st.session_state.journey_firmado,
+              )
+
+            if firma_colab and firma_gerente:
+              st.session_state.journey_firmado = True
+              st.success(
+                  '✅ **¡Ruta de Desarrollo One-Pager Validada y Firmada'
+                  ' Exitosamente por Ambas Partes!**'
+              )
+            else:
+              st.warning(
+                  '⚠️ Ambas partes deben marcar la casilla de aceptación para'
+                  ' formalizar la firma definitiva.'
+              )
 
     with tab_res:
       st.markdown(
