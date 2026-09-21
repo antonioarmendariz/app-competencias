@@ -136,6 +136,8 @@ if 'respuestas_usuario' not in st.session_state:
   st.session_state.respuestas_usuario = {}
 if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
+if 'competencias_prioritarias_global' not in st.session_state:
+  st.session_state.competencias_prioritarias_global = []
 
 
 # Función auxiliar para extraer Nombre y Apellido desde el correo o texto
@@ -372,7 +374,7 @@ else:
     tab_diag, tab_journey, tab_res = st.tabs([
         '📝 Autodiagnóstico de Competencias',
         '🚀 Ruta de Desarrollo 70/20/10',
-        '📊 Mis Resultados y Gráfico Spider',
+        '📊 Mis Resultados y Gráficos Spider',
     ])
 
     with tab_diag:
@@ -449,7 +451,7 @@ else:
         st.session_state.nombre_gerente = nombre_gerente
         st.success(
             '¡Evaluación guardada con éxito! Ya puedes revisar tu Ruta de'
-            ' Desarrollo y el Gráfico Spider en las pestañas superiores.'
+            ' Desarrollo y los Gráficos Spider en las pestañas superiores.'
         )
 
     with tab_journey:
@@ -480,7 +482,6 @@ else:
             ' pestaña y haz clic en Guardar.'
         )
       else:
-        # Obtener competencias que están en desarrollo (nivel < 3)
         competencias_en_desarrollo = [
             comp
             for comp, nivel in st.session_state.respuestas_usuario.items()
@@ -498,9 +499,17 @@ else:
           competencias_prioritarias = st.multiselect(
               'Elige las competencias prioritarias a desarrollar (máximo 4):',
               options=competencias_en_desarrollo,
-              default=competencias_en_desarrollo[
-                  : min(4, len(competencias_en_desarrollo))
-              ],
+              default=st.session_state.get(
+                  'competencias_prioritarias_global',
+                  competencias_en_desarrollo[
+                      : min(4, len(competencias_en_desarrollo))
+                  ],
+              ),
+          )
+
+          # Guardar en session state para sincronizar con la hoja de resultados
+          st.session_state.competencias_prioritarias_global = (
+              competencias_prioritarias
           )
 
           if len(competencias_prioritarias) > 4:
@@ -534,7 +543,6 @@ else:
                   },
               )
 
-              # Desplegable individual por competencia
               with st.expander(
                   f'📌 {comp} — Nivel Actual: {nivel_texto}', expanded=True
               ):
@@ -596,7 +604,7 @@ else:
 
     with tab_res:
       st.markdown(
-          '### 📊 Reporte de Resultados, Matriz Consolidada y Gráfico Spider'
+          '### 📊 Reporte de Resultados, Matriz Consolidada y Gráficos Spider'
       )
 
       if not st.session_state.respuestas_usuario:
@@ -637,32 +645,24 @@ else:
         st.dataframe(df_resultados, use_container_width=True)
         st.markdown('---')
 
-        st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
-        todas_competencias = df_resultados['Competencia'].tolist()
-        competencias_seleccionadas = st.multiselect(
-            'Selecciona las competencias a visualizar en el gráfico de'
-            ' radar:',
-            options=todas_competencias,
-            default=todas_competencias,
-        )
+        # --- DOS GRÁFICOS SPIDER: COMPLETO Y PRIORITARIO ---
+        col_sp1, col_sp2 = st.columns(2)
 
-        if competencias_seleccionadas:
-          df_filtrado = df_resultados[
-              df_resultados['Competencia'].isin(competencias_seleccionadas)
-          ]
-          fig = px.line_polar(
-              df_filtrado,
+        with col_sp1:
+          st.markdown('#### 🕸️ Spider Completo (Todas las Competencias)')
+          fig_completo = px.line_polar(
+              df_resultados,
               r='Nivel',
               theta='Competencia',
               line_close=True,
               range_r=[0, 3],
           )
-          fig.update_traces(
+          fig_completo.update_traces(
               fill='toself',
-              line_color='#FF7600',
-              fillcolor='rgba(98, 213, 177, 0.4)',
+              line_color='#2F3F47',
+              fillcolor='rgba(47, 63, 71, 0.3)',
           )
-          fig.update_layout(
+          fig_completo.update_layout(
               polar=dict(
                   radialaxis=dict(visible=True, range=[0, 3], color='#2F3F47'),
                   bgcolor='#FFFFFF',
@@ -672,11 +672,50 @@ else:
               font=dict(color='#2F3F47'),
               showlegend=False,
           )
-          st.plotly_chart(fig, use_container_width=True)
-        else:
-          st.warning(
-              '⚠️ Selecciona al menos una competencia para mostrar el gráfico'
-              ' de radar.'
-          )
+          st.plotly_chart(fig_completo, use_container_width=True)
 
-        st.success('✨ Reporte y matriz generados correctamente.')
+        with col_sp2:
+          st.markdown(
+              '#### 🎯 Spider de Competencias Prioritarias (One-Pager)'
+          )
+          prioritarias = st.session_state.get(
+              'competencias_prioritarias_global', []
+          )
+          if prioritarias:
+            df_prioritarias = df_resultados[
+                df_resultados['Competencia'].isin(prioritarias)
+            ]
+            fig_prioritarias = px.line_polar(
+                df_prioritarias,
+                r='Nivel',
+                theta='Competencia',
+                line_close=True,
+                range_r=[0, 3],
+            )
+            fig_prioritarias.update_traces(
+                fill='toself',
+                line_color='#FF7600',
+                fillcolor='rgba(98, 213, 177, 0.5)',
+            )
+            fig_prioritarias.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 3], color='#2F3F47'),
+                    bgcolor='#FFFFFF',
+                ),
+                paper_bgcolor='#FFFFFF',
+                plot_bgcolor='#FFFFFF',
+                font=dict(color='#2F3F47'),
+                showlegend=False,
+            )
+            st.plotly_chart(fig_prioritarias, use_container_width=True)
+          else:
+            st.info(
+                'ℹ️ Selecciona tus competencias prioritarias en la pestaña'
+                ' anterior (Ruta de Desarrollo) para visualizar este gráfico'
+                ' focalizado.'
+            )
+
+        st.success(
+            '✨ Reporte y gráficos Spider generados y sincronizados'
+            ' correctamente.'
+        )
