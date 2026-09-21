@@ -616,7 +616,6 @@ else:
                   comp, {'70': default_70, '20': default_20, '10': default_10}
               )
 
-              # Expander con el NOMBRE REAL de la competencia
               with st.expander(
                   f'📌 {comp} — Nivel Actual: {nivel_texto}', expanded=True
               ):
@@ -721,7 +720,7 @@ else:
 
         col_sp1, col_sp2 = st.columns(2)
 
-        # 1. SPIDER COMPLETO CON LÍNEA DE NIVEL ESPERADO (AZUL)
+        # 1. SPIDER COMPLETO CON LÍNEA DE NIVEL ESPERADO (VERDE #1A4E45 CONTINUA)
         with col_sp1:
           st.markdown('#### 🕸️ Spider Completo (Todas las Competencias)')
           df_completo_plot = df_resultados.copy()
@@ -742,7 +741,7 @@ else:
               range_r=[0, 3.2],
               color_discrete_map={
                   'Nivel Actual': '#FF7600',
-                  'Nivel Esperado (Meta)': '#1F77B4',
+                  'Nivel Esperado (Meta)': '#1A4E45',
               },
           )
           fig_completo.update_traces(
@@ -752,7 +751,7 @@ else:
           )
           fig_completo.update_traces(
               fill='none',
-              line=dict(dash='dash', width=2),
+              line=dict(dash='solid', width=2.5),
               selector=dict(name='Nivel Esperado (Meta)'),
           )
           fig_completo.update_layout(
@@ -769,7 +768,7 @@ else:
           )
           st.plotly_chart(fig_completo, use_container_width=True)
 
-        # 2. SPIDER DE PRIORITARIAS CON LÍNEA DE NIVEL ESPERADO (AZUL)
+        # 2. SPIDER DE PRIORITARIAS CON LÍNEA DE NIVEL ESPERADO (VERDE #1A4E45 CONTINUA)
         with col_sp2:
           st.markdown(
               '#### 🎯 Spider de Competencias Prioritarias (One-Pager)'
@@ -798,7 +797,7 @@ else:
                 range_r=[0, 3.2],
                 color_discrete_map={
                     'Nivel Actual': '#FF7600',
-                    'Nivel Esperado (Meta)': '#1F77B4',
+                    'Nivel Esperado (Meta)': '#1A4E45',
                 },
             )
             fig_prioritarias.update_traces(
@@ -808,7 +807,7 @@ else:
             )
             fig_prioritarias.update_traces(
                 fill='none',
-                line=dict(dash='dash', width=2),
+                line=dict(dash='solid', width=2.5),
                 selector=dict(name='Nivel Esperado (Meta)'),
             )
             fig_prioritarias.update_layout(
