@@ -43,6 +43,20 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
+    /* Estilo para los botones de carga de archivos en el Sidebar (#62D5B1 con letras blancas) */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
+        background-color: #62D5B1 !important;
+        border: 2px dashed #FFFFFF !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] section * {
+        color: #FFFFFF !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] button {
+        background-color: #FFFFFF !important;
+        color: #2F3F47 !important;
+        font-weight: bold;
+    }
+    
     /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco para alto contraste */
     [data-testid="stSidebar"] {
         background-color: #2F3F47;
@@ -101,14 +115,28 @@ if 'respuestas_usuario' not in st.session_state:
 if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
 
+
+# Función auxiliar para extraer Nombre y Apellido desde el correo o texto
+def obtener_nombre_apellido(email):
+  try:
+    nombre_base = email.split('@')[0]
+    partes = nombre_base.replace('.', ' ').replace('_', ' ').split()
+    if len(partes) >= 2:
+      return f'{partes[0].capitalize()} {partes[1].capitalize()}'
+    elif len(partes) == 1:
+      return partes[0].capitalize()
+    return email
+  except Exception:
+    return email
+
+
 # --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ORDENADO ---
 st.sidebar.markdown('## 👤 Acceso al Sistema')
 
 if st.session_state.sesion_iniciada:
-  st.sidebar.success(
-      f'Sesión activa como: **{st.session_state.email_actual}**'
-  )
-  if st.sidebar.button('🚪 Cerrar Sesión / Cambiar Perfil'):
+  nombre_formateado = obtener_nombre_apellido(st.session_state.email_actual)
+  st.sidebar.success(f'Sesión activa como: **{nombre_formateado}**')
+  if st.sidebar.button('🚪 Cerrar sesión'):
     st.session_state.sesion_iniciada = False
     st.session_state.es_key_user = False
     st.session_state.email_actual = ''
@@ -304,7 +332,8 @@ else:
       col_id1, col_id2 = st.columns(2)
       with col_id1:
         nombre_colaborador = st.text_input(
-            'Nombre del Colaborador:', value='Antonio Armendariz'
+            'Nombre del Colaborador:',
+            value=obtener_nombre_apellido(st.session_state.email_actual),
         )
       with col_id2:
         nombre_gerente = st.text_input(
@@ -380,7 +409,8 @@ else:
       )
 
       colab = st.session_state.get(
-          'nombre_colaborador', 'Antonio Armendariz'
+          'nombre_colaborador',
+          obtener_nombre_apellido(st.session_state.email_actual),
       )
       ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
       st.info(
@@ -532,7 +562,8 @@ else:
         )
       else:
         colab = st.session_state.get(
-            'nombre_colaborador', 'Colaborador General'
+            'nombre_colaborador',
+            obtener_nombre_apellido(st.session_state.email_actual),
         )
         ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
 
