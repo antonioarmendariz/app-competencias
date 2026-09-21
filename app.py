@@ -43,7 +43,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo limpio, profesional y sin cuadros negros para los cargadores de archivos en el Sidebar */
+    /* Estilo limpio, profesional y con iconos blancos para los cargadores de archivos en el Sidebar */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
         border: none !important;
@@ -60,22 +60,23 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 4px !important;
     }
-    /* Neutralización total de contenedores negros en archivos subidos */
+    /* Estilo para el contenedor de archivo cargado con acento blanco contrastante */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
-        background-color: #FFFFFF !important;
-        border: 1px solid #2F3F47 !important;
+        background-color: #2F3F47 !important;
+        border: 1px solid #FFFFFF !important;
         border-radius: 6px !important;
     }
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] div,
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] span,
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] small,
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] svg {
-        color: #2F3F47 !important;
-        fill: #2F3F47 !important;
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] div {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
     }
-    /* Forzar fondo blanco y texto oscuro en el icono interno del archivo cargado */
+    /* Cambiar la figura tenue / icono interno a color blanco puro */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] svg,
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] [data-testid="stIconMaterial"] {
-        color: #2F3F47 !important;
+        color: #FFFFFF !important;
+        fill: #FFFFFF !important;
     }
     
     /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco */
