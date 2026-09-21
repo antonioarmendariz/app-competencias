@@ -25,12 +25,12 @@ st.markdown(
         font-weight: 700;
     }
     
-    /* Texto general y párrafos en el cuerpo */
-    p, span, label, .stMarkdown {
+    /* Texto general, párrafos y etiquetas en el cuerpo */
+    p, span, label, .stMarkdown, div {
         color: #2F3F47;
     }
     
-    /* Botones principales */
+    /* Botones principales de acción */
     .stButton>button {
         background-color: #62D5B1 !important;
         color: #2F3F47 !important;
@@ -43,7 +43,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Sidebar: Fondo oscuro institucional con texto blanco contrastante */
+    /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco para alto contraste */
     [data-testid="stSidebar"] {
         background-color: #2F3F47;
     }
@@ -53,11 +53,12 @@ st.markdown(
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3 {
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] div {
         color: #FFFFFF !important;
     }
     
-    /* Inputs de texto en sidebar para asegurar legibilidad */
+    /* Inputs de texto en sidebar para asegurar legibilidad oscura sobre fondo claro */
     [data-testid="stSidebar"] input {
         color: #2F3F47 !important;
         background-color: #FFFFFF !important;
@@ -101,13 +102,13 @@ if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
 
 # --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ORDENADO ---
-st.sidebar.markdown('## 👤 Acceso al Sistema (#)')
+st.sidebar.markdown('## 👤 Acceso al Sistema')
 
 if st.session_state.sesion_iniciada:
   st.sidebar.success(
-      f'Sesión activa como: **{st.session_state.email_actual}** (#)'
+      f'Sesión activa como: **{st.session_state.email_actual}**'
   )
-  if st.sidebar.button('🚪 Cerrar Sesión / Cambiar Perfil (#)'):
+  if st.sidebar.button('🚪 Cerrar Sesión / Cambiar Perfil'):
     st.session_state.sesion_iniciada = False
     st.session_state.es_key_user = False
     st.session_state.email_actual = ''
@@ -115,38 +116,35 @@ if st.session_state.sesion_iniciada:
   st.sidebar.markdown('---')
 else:
   email_ingresado = st.sidebar.text_input(
-      'Correo corporativo (#):',
+      'Correo corporativo:',
       value='antonio.armendariz@innodep.com.mx',
       key='email_ingresado_temp',
   )
   password_ingresado = st.sidebar.text_input(
-      'Contraseña (#):',
-      type='password',
-      value='',
-      key='password_ingresado_temp',
+      'Contraseña:', type='password', value='', key='password_ingresado_temp'
   )
 
-  if st.sidebar.button('🔑 Ingresar al Sistema (#)'):
+  if st.sidebar.button('🔑 Ingresar al Sistema'):
     email_limpio = email_ingresado.strip().lower()
     if email_limpio == KEY_USER_EMAIL.lower():
       if password_ingresado == st.session_state.key_user_password:
         st.session_state.sesion_iniciada = True
         st.session_state.es_key_user = True
         st.session_state.email_actual = email_ingresado
-        st.sidebar.success('¡Acceso concedido como Key User! (#)')
+        st.sidebar.success('¡Acceso concedido como Key User!')
         st.rerun()
       else:
-        st.sidebar.error('Contraseña de Key User incorrecta (#).')
+        st.sidebar.error('Contraseña de Key User incorrecta.')
     else:
       if len(email_limpio) > 5 and len(password_ingresado) > 0:
         st.session_state.sesion_iniciada = True
         st.session_state.es_key_user = False
         st.session_state.email_actual = email_ingresado
-        st.sidebar.success('¡Acceso concedido como Usuario General! (#)')
+        st.sidebar.success('¡Acceso concedido como Usuario General!')
         st.rerun()
       else:
         st.sidebar.warning(
-            'Ingresa un correo válido y una contraseña para continuar (#).'
+            'Ingresa un correo válido y una contraseña para continuar.'
         )
 
   st.sidebar.markdown('---')
@@ -157,71 +155,65 @@ acceso_concedido = st.session_state.sesion_iniciada
 
 # --- PANEL DE PERSONALIZACIÓN Y CARGA (EXCLUSIVO KEY USER) ---
 if acceso_concedido and es_key_user:
-  st.sidebar.markdown('### 🖼️ Identidad Visual (#)')
+  st.sidebar.markdown('### 🖼️ Identidad Visual')
 
   logo_file = st.sidebar.file_uploader(
-      'Cargar Logo Empresa (#)', type=['png', 'jpg', 'jpeg'], key='logo_upload'
+      'Cargar Logo Empresa', type=['png', 'jpg', 'jpeg'], key='logo_upload'
   )
   if logo_file:
-    st.sidebar.image(
-        logo_file, width=160, caption='Logotipo de la Empresa (#)'
-    )
+    st.sidebar.image(logo_file, width=160, caption='Logotipo de la Empresa')
   else:
     st.sidebar.markdown(
         '🏢 *Logo por defecto:* **INNODEP S.C. / DECIDO** (Sube una imagen para'
-        ' reemplazarlo) (#)'
+        ' reemplazarlo)'
     )
 
   st.sidebar.markdown('---')
-  st.sidebar.markdown('### ⚙️ Parametrización y Carga (#)')
-  st.sidebar.markdown('*Exclusivo Key User* (#)')
+  st.sidebar.markdown('### ⚙️ Parametrización y Carga')
+  st.sidebar.markdown('*Exclusivo Key User*')
 
   file_estructura = st.sidebar.file_uploader(
-      '1. Plantilla de Estructura (#)', type=['xlsx', 'xls']
+      '1. Plantilla de Estructura', type=['xlsx', 'xls']
   )
   if file_estructura:
     st.session_state.df_estructura = pd.read_excel(file_estructura)
 
   file_recursos = st.sidebar.file_uploader(
-      '2. Plantilla Recursos 70/20/10 (#)', type=['xlsx', 'xls']
+      '2. Plantilla Recursos 70/20/10', type=['xlsx', 'xls']
   )
   if file_recursos:
     st.session_state.df_recursos = pd.read_excel(file_recursos)
 
   file_competencias = st.sidebar.file_uploader(
-      '3. Plantilla Competencias (#)', type=['xlsx', 'xls']
+      '3. Plantilla Competencias', type=['xlsx', 'xls']
   )
   if file_competencias:
     st.session_state.df_competencias = pd.read_excel(file_competencias)
 
   st.sidebar.markdown('---')
-  with st.sidebar.expander('⚙️ Settings / Cambiar Contraseña (#)'):
+  with st.sidebar.expander('⚙️ Settings / Cambiar Contraseña'):
     pass_actual = st.text_input(
-        'Contraseña Actual (#):', type='password', key='p_act'
+        'Contraseña Actual:', type='password', key='p_act'
     )
     pass_nuevo = st.text_input(
-        'Nueva Contraseña (#):', type='password', key='p_new'
+        'Nueva Contraseña:', type='password', key='p_new'
     )
-    if st.button('Actualizar Contraseña (#)'):
+    if st.button('Actualizar Contraseña'):
       if pass_actual == st.session_state.key_user_password:
         if len(pass_nuevo) >= 4:
           st.session_state.key_user_password = pass_nuevo
           st.success(
-              '¡Contraseña actualizada con éxito! Úsala en tu próximo acceso. (#)'
+              '¡Contraseña actualizada con éxito! Úsala en tu próximo acceso.'
           )
         else:
-          st.error(
-              'La nueva contraseña debe tener al menos 4 caracteres. (#)'
-          )
+          st.error('La nueva contraseña debe tener al menos 4 caracteres.')
       else:
-        st.error('La contraseña actual es incorrecta (#).')
+        st.error('La contraseña actual es incorrecta.')
 elif acceso_concedido and not es_key_user:
-  st.sidebar.markdown(
-      '🔒 *Sección de administración restringida al Key User.* (#)'
-  )
+  st.sidebar.markdown('🔒 *Sección de administración restringida al Key User.*')
 else:
   st.sidebar.markdown(
-      '🔒 *Inicia sesión con tus credenciales para habilitar los paneles.* (#)'
+      '🔒 *Inicia sesión con tus credenciales para habilitar los paneles.*'
   )
 
 # --- VERIFICACIÓN DE DATOS CARGADOS ---
@@ -232,96 +224,91 @@ archivos_cargados = (
 )
 
 # --- CUERPO PRINCIPAL ---
-st.markdown(
-    '# 🎯 Sistema de Gestión De Desarrollo de Talento INNODEP SC (#)'
-)
+st.markdown('# 🎯 Sistema de Gestión De Desarrollo de Talento INNODEP SC')
 
 if not acceso_concedido:
   st.warning(
       '⚠️ Por favor, ingresa tu correo y contraseña en la barra lateral y'
-      ' presiona **"Ingresar al Sistema"** para comenzar. (#)'
+      ' presiona **"Ingresar al Sistema"** para comenzar.'
   )
 elif not archivos_cargados:
   st.warning(
       '⚠️ El acceso es correcto, pero espera a que el Key User cargue las'
       ' plantillas maestras en el sistema para habilitar las vistas y el'
-      ' diagnóstico. (#)'
+      ' diagnóstico.'
   )
 else:
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
-    st.success('✅ Plantilla Estructura: Cargada (#)')
+    st.success('✅ Plantilla Estructura: Cargada')
   with col_s2:
-    st.success('✅ Plantilla Recursos: Cargada (#)')
+    st.success('✅ Plantilla Recursos: Cargada')
   with col_s3:
-    st.success('✅ Plantilla Competencias: Cargada (#)')
+    st.success('✅ Plantilla Competencias: Cargada')
 
   st.markdown('---')
 
   if es_key_user:
     # --- VISTA DE KEY USER / ADMINISTRACIÓN ---
     tab_resumen, tab_est, tab_rec, tab_comp = st.tabs([
-        '📊 Resumen Consolidado (#)',
-        '🏢 Estructura (#)',
-        '📈 Recursos 70/20/10 (#)',
-        '💡 Competencias (#)',
+        '📊 Resumen Consolidado',
+        '🏢 Estructura',
+        '📈 Recursos 70/20/10',
+        '💡 Competencias',
     ])
 
     with tab_resumen:
-      st.markdown('### 📌 Vista General del Programa (#)')
+      st.markdown('### 📌 Vista General del Programa')
       c1, c2, c3 = st.columns(3)
       c1.metric(
-          'Total de Roles / Puestos (#)',
-          len(st.session_state.df_estructura),
+          'Total de Roles / Puestos', len(st.session_state.df_estructura)
       )
       c2.metric(
-          'Total de Recursos 70/20/10 (#)',
-          len(st.session_state.df_recursos),
+          'Total de Recursos 70/20/10', len(st.session_state.df_recursos)
       )
       c3.metric(
-          'Total de Competencias (#)',
-          len(st.session_state.df_competencias),
+          'Total de Competencias', len(st.session_state.df_competencias)
       )
       st.success(
           '🎉 Las tres plantillas han sido cargadas exitosamente y se'
-          ' encuentran consolidadas en memoria. (#)'
+          ' encuentran consolidadas en memoria.'
       )
 
     with tab_est:
-      st.markdown('### 🏢 Estructura Organizacional (#)')
+      st.markdown('### 🏢 Estructura Organizacional')
       st.dataframe(st.session_state.df_estructura, use_container_width=True)
 
     with tab_rec:
-      st.markdown('### 📈 Recursos de Capacitación 70/20/10 (#)')
+      st.markdown('### 📈 Recursos de Capacitación 70/20/10')
       st.dataframe(st.session_state.df_recursos, use_container_width=True)
 
     with tab_comp:
-      st.markdown('### 💡 Modelo de Competencias (#)')
+      st.markdown('### 💡 Modelo de Competencias')
       st.dataframe(st.session_state.df_competencias, use_container_width=True)
 
   else:
     # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
     tab_diag, tab_journey, tab_res = st.tabs([
-        '📝 Autodiagnóstico de Competencias (#)',
-        '🚀 Matriz y Journey Estructurado 70/20/10 (#)',
-        '📊 Mis Resultados y Gráfico Spider (#)',
+        '📝 Autodiagnóstico de Competencias',
+        '🚀 Matriz y Journey Estructurado 70/20/10',
+        '📊 Mis Resultados y Gráfico Spider',
     ])
 
     with tab_diag:
-      st.markdown('### 📝 Evaluación y Autodiagnóstico (#)')
+      st.markdown('### 📝 Evaluación y Autodiagnóstico')
       st.write(
           'Completa los datos de identificación y evalúa tu nivel de dominio'
-          ' basándote en los descriptores de cada nivel. (#)'
+          ' basándote en los descriptores de cada nivel.'
       )
 
       col_id1, col_id2 = st.columns(2)
       with col_id1:
         nombre_colaborador = st.text_input(
-            'Nombre del Colaborador (#):', value='Antonio Armendariz'
+            'Nombre del Colaborador:', value='Antonio Armendariz'
         )
       with col_id2:
         nombre_gerente = st.text_input(
-            'Nombre del Gerente / Líder (#):', value='Gerente Directo'
+            'Nombre del Gerente / Líder:', value='Gerente Directo'
         )
 
       st.markdown('---')
@@ -336,39 +323,34 @@ else:
             or f'Competencia {idx+1}'
         )
         desc_gral = row.get(
-            'Descriptor general (#)',
-            'Sin descripción general disponible (#)',
+            'Descriptor general', 'Sin descripción general disponible'
         )
 
         nivel_basico = row.get(
-            'Nivel Básico (#)',
-            row.get('Básico (#)', 'Describir nivel básico... (#)'),
+            'Nivel Básico', row.get('Básico', 'Describir nivel básico...')
         )
         nivel_intermedio = row.get(
-            'Nivel Intermedio (#)',
-            row.get('Intermedio (#)', 'Describir nivel intermedio... (#)'),
+            'Nivel Intermedio',
+            row.get('Intermedio', 'Describir nivel intermedio...'),
         )
         nivel_avanzado = row.get(
-            'Nivel Avanzado (#)',
-            row.get('Avanzado (#)', 'Describir nivel avanzado... (#)'),
+            'Nivel Avanzado', row.get('Avanzado', 'Describir nivel avanzado...')
         )
 
         st.markdown(f'#### {idx+1}. {comp_nombre}')
-        st.info(f'**Descriptor General (#):** {desc_gral}')
+        st.info(f'**Descriptor General:** {desc_gral}')
 
-        with st.expander(
-            f'📖 Ver detalles de niveles para (#): {comp_nombre}'
-        ):
-          st.markdown(f'- **Nivel 1 (Básico) (#):** {nivel_basico}')
-          st.markdown(f'- **Nivel 2 (Intermedio) (#):** {nivel_intermedio}')
-          st.markdown(f'- **Nivel 3 (Avanzado) (#):** {nivel_avanzado}')
+        with st.expander(f'📖 Ver detalles de niveles para: {comp_nombre}'):
+          st.markdown(f'- **Nivel 1 (Básico):** {nivel_basico}')
+          st.markdown(f'- **Nivel 2 (Intermedio):** {nivel_intermedio}')
+          st.markdown(f'- **Nivel 3 (Avanzado):** {nivel_avanzado}')
 
         nivel_evaluado = st.radio(
-            f'Selecciona tu nivel alcanzado en (#): {comp_nombre}',
+            f'Selecciona tu nivel alcanzado en: {comp_nombre}',
             options=[
-                '1 - Básico (#)',
-                '2 - Intermedio (#)',
-                '3 - Avanzado / Experto (#)',
+                '1 - Básico',
+                '2 - Intermedio',
+                '3 - Avanzado / Experto',
             ],
             key=f'resp_comp_{idx}',
             horizontal=True,
@@ -378,23 +360,23 @@ else:
         st.markdown('---')
 
       if st.button(
-          '💾 Guardar Autodiagnóstico y Generar Reporte (#)', type='primary'
+          '💾 Guardar Autodiagnóstico y Generar Reporte', type='primary'
       ):
         st.session_state.respuestas_usuario = respuestas_temp
         st.session_state.nombre_colaborador = nombre_colaborador
         st.session_state.nombre_gerente = nombre_gerente
         st.success(
             '¡Evaluación guardada con éxito! Ya puedes revisar tu Journey'
-            ' estructurado y el Gráfico Spider en las pestañas superiores. (#)'
+            ' estructurado y el Gráfico Spider en las pestañas superiores.'
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Journey de Desarrollo Estructurado (70/20/10) (#)')
+      st.markdown('### 🚀 Journey de Desarrollo Estructurado (70/20/10)')
       st.write(
           'Para cada competencia en desarrollo, revisa los tres pilares'
           ' organizados en columnas. Puedes **desmarcar** actividades que no'
           ' apliquen, **editar sus objetivos** o **agregar actividades'
-          ' adicionales** a mano antes de firmar el plan definitivo. (#)'
+          ' adicionales** a mano antes de firmar el plan definitivo.'
       )
 
       colab = st.session_state.get(
@@ -402,8 +384,8 @@ else:
       )
       ger = st.session_state.get('nombre_gerente', 'Gerente Asignado')
       st.info(
-          f'👤 **Colaborador (#):** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; 👔'
-          f' **Gerente Responsable (#):** {ger}'
+          f'👤 **Colaborador:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; 👔'
+          f' **Gerente Responsable:** {ger}'
       )
       st.markdown('---')
 
@@ -411,7 +393,7 @@ else:
         st.warning(
             '⚠️ Para configurar el Journey, por favor completa primero tu'
             ' **Autodiagnóstico de Competencias** en la primera pestaña y haz'
-            ' clic en Guardar. (#)'
+            ' clic en Guardar.'
         )
       else:
         competencias_a_desarrollar = [
@@ -424,7 +406,7 @@ else:
           st.success(
               '🎉 ¡Felicidades! Has alcanzado el nivel avanzado en todas tus'
               ' competencias evaluadas. Tu enfoque se centrará en mentoría'
-              ' avanzada y proyectos de innovación. (#)'
+              ' avanzada y proyectos de innovación.'
           )
         else:
           if 'acciones_personalizadas' not in st.session_state:
@@ -433,27 +415,25 @@ else:
           for comp in competencias_a_desarrollar:
             nivel_actual = st.session_state.respuestas_usuario[comp]
             nivel_texto = (
-                'Básico (Nivel 1) (#)'
+                'Básico (Nivel 1)'
                 if nivel_actual == 1
-                else 'Intermedio (Nivel 2) (#)'
+                else 'Intermedio (Nivel 2)'
             )
 
             st.markdown(
                 f'### 🎯 Competencia: *{comp}* &nbsp;&nbsp;|&nbsp;&nbsp; Nivel'
-                f' Actual: **{nivel_texto}** (#)'
+                f' Actual: **{nivel_texto}**'
             )
 
             col_70, col_20, col_10 = st.columns(3)
 
             with col_70:
-              st.markdown('#### 🛠️ 70% Experiencia (Práctica) (#)')
+              st.markdown('#### 🛠️ 70% Experiencia (Práctica)')
               ck_70 = st.checkbox(
-                  'Incluir actividad 70% (#)',
-                  value=True,
-                  key=f'cb_70_{comp}',
+                  'Incluir actividad 70%', value=True, key=f'cb_70_{comp}'
               )
               obj_70 = st.text_area(
-                  'Objetivo / Acción 70% (#):',
+                  'Objetivo / Acción 70%:',
                   value=(
                       f'Liderar un proyecto o reto práctico on-the-job'
                       f' enfocado en resolver situaciones reales de {comp}.'
@@ -463,14 +443,12 @@ else:
               )
 
             with col_20:
-              st.markdown('#### 👥 20% Exposición (Social) (#)')
+              st.markdown('#### 👥 20% Exposición (Social)')
               ck_20 = st.checkbox(
-                  'Incluir actividad 20% (#)',
-                  value=True,
-                  key=f'cb_20_{comp}',
+                  'Incluir actividad 20%', value=True, key=f'cb_20_{comp}'
               )
               obj_20 = st.text_area(
-                  'Objetivo / Acción 20% (#):',
+                  'Objetivo / Acción 20%:',
                   value=(
                       f'Sesión de mentoría y feedback 1o1 con {ger} para'
                       f' revisar avances y mejores prácticas en {comp}.'
@@ -480,14 +458,12 @@ else:
               )
 
             with col_10:
-              st.markdown('#### 📚 10% Formación (Formal) (#)')
+              st.markdown('#### 📚 10% Formación (Formal)')
               ck_10 = st.checkbox(
-                  'Incluir actividad 10% (#)',
-                  value=True,
-                  key=f'cb_10_{comp}',
+                  'Incluir actividad 10%', value=True, key=f'cb_10_{comp}'
               )
               obj_10 = st.text_area(
-                  'Objetivo / Acción 10% (#):',
+                  'Objetivo / Acción 10%:',
                   value=(
                       f'Revisión de guías técnicas, lecturas especializadas o'
                       f' curso digital sobre {comp}.'
@@ -497,10 +473,10 @@ else:
               )
 
             with st.expander(
-                f'➕ Agregar actividad manual adicional para: {comp} (#)'
+                f'➕ Agregar actividad manual adicional para: {comp}'
             ):
               obj_manual = st.text_input(
-                  'Descripción de la actividad extra (#):',
+                  'Descripción de la actividad extra:',
                   value='',
                   key=f'manual_extra_{comp}',
                   placeholder=(
@@ -520,17 +496,17 @@ else:
 
             st.markdown('---')
 
-      st.markdown('### ✍️ Validación y Firma Digital del Journey (#)')
+      st.markdown('### ✍️ Validación y Firma Digital del Journey')
 
       col_f1, col_f2 = st.columns(2)
       with col_f1:
         firma_colab = st.checkbox(
-            f'Acepto y valido mi plan estructurado ({colab}) (#)',
+            f'Acepto y valido mi plan estructurado ({colab})',
             value=st.session_state.journey_firmado,
         )
       with col_f2:
         firma_gerente = st.checkbox(
-            f'Aprobar plan estructurado como líder/gerente ({ger}) (#)',
+            f'Aprobar plan estructurado como líder/gerente ({ger})',
             value=st.session_state.journey_firmado,
         )
 
@@ -539,21 +515,20 @@ else:
         st.success(
             '✅ **¡Journey Estructurado, Firmado y Validado Exitosamente por'
             ' Ambas Partes!** Tus ajustes y actividades manuales se han'
-            ' registrado correctamente. (#)'
+            ' registrado correctamente.'
         )
       else:
         st.warning(
             '⚠️ Ambas partes (Colaborador y Gerente) deben marcar la casilla'
-            ' de aceptación para formalizar la firma definitiva del Journey. (#)'
+            ' de aceptación para formalizar la firma definitiva del Journey.'
         )
 
     with tab_res:
-      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider (#)')
+      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider')
 
       if not st.session_state.respuestas_usuario:
         st.warning(
             '⚠️ Aún no has completado tu autodiagnóstico en la primera pestaña.'
-            ' (#)'
         )
       else:
         colab = st.session_state.get(
@@ -563,7 +538,7 @@ else:
 
         st.markdown(
             f'**Evaluación de:** {colab} &nbsp;&nbsp;|&nbsp;&nbsp; **Revisado'
-            f' por (#):** {ger}'
+            f' por:** {ger}'
         )
         st.markdown('---')
 
@@ -575,23 +550,19 @@ else:
         col_r1, col_r2 = st.columns([1, 1.2])
 
         with col_r1:
-          st.markdown('#### Detalle de Puntuaciones (#)')
+          st.markdown('#### Detalle de Puntuaciones')
           st.dataframe(df_resultados, use_container_width=True)
           promedio = df_resultados['Nivel'].mean()
-          st.metric(
-              'Promedio General de Dominio (#)', f'{promedio:.2f} / 3.0'
-          )
+          st.metric('Promedio General de Dominio', f'{promedio:.2f} / 3.0')
           if st.session_state.journey_firmado:
-            st.success(
-                '🔒 Estatus: Journey Estructurado, Firmado y Validado (#)'
-            )
+            st.success('🔒 Estatus: Journey Estructurado, Firmado y Validado')
           else:
             st.warning(
-                '🔓 Estatus: Pendiente de Estructurar y Firmar Journey (#)'
+                '🔓 Estatus: Pendiente de Estructurar y Firmar Journey'
             )
 
         with col_r2:
-          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias) (#)')
+          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
           fig = px.line_polar(
               df_resultados,
               r='Nivel',
@@ -616,4 +587,4 @@ else:
           )
           st.plotly_chart(fig, use_container_width=True)
 
-        st.success('✨ Gráfico Spider generado correctamente (#).')
+        st.success('✨ Gráfico Spider generado correctamente.')
