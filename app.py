@@ -453,11 +453,12 @@ else:
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Ruta de Desarrollo 70/20/10')
+      st.markdown('### 🚀 Ruta de Desarrollo 70/20/10 (Matriz Ejecutiva)')
       st.write(
-          'Matriz estructurada de acciones de desarrollo para tus áreas de'
-          ' oportunidad. Puedes revisar y editar los objetivos de 70%,'
-          ' 20% y 10% antes de validar y firmar el plan definitivo.'
+          'Matriz dinámica consolidada con las acciones de desarrollo para'
+          ' tus áreas de oportunidad. Puedes editar directamente los objetivos'
+          ' de 70%, 20% y 10% en cada fila antes de validar y firmar el plan'
+          ' definitivo.'
       )
 
       colab = st.session_state.get(
@@ -491,9 +492,10 @@ else:
               ' avanzada y proyectos de innovación.'
           )
         else:
-          if 'acciones_matriz' not in st.session_state:
-            st.session_state.acciones_matriz = {}
+          if 'acciones_matriz_dinamica' not in st.session_state:
+            st.session_state.acciones_matriz_dinamica = {}
 
+          # Renderizar como tabla dinámica ejecutiva estructurada por filas/columnas
           for comp in competencias_a_desarrollar:
             nivel_actual = st.session_state.respuestas_usuario[comp]
             nivel_texto = (
@@ -502,49 +504,45 @@ else:
                 else 'Intermedio (Nivel 2)'
             )
 
-            defaults = st.session_state.acciones_matriz.get(
+            defaults = st.session_state.acciones_matriz_dinamica.get(
                 comp,
                 {
-                    '70': (
-                        f'Liderar proyecto o reto práctico on-the-job en'
-                        f' {comp}.'
-                    ),
-                    '20': f'Sesión de mentoría y feedback 1o1 con {ger}.',
-                    '10': f'Revisión de guías técnicas o curso digital sobre {comp}.',
+                    '70': f'Liderar proyecto o reto práctico en {comp}.',
+                    '20': f'Sesión de mentoría y feedback con {ger}.',
+                    '10': f'Curso digital o lectura técnica sobre {comp}.',
                 },
             )
 
             st.markdown(
-                f'#### 🎯 {comp} &nbsp;&nbsp;|&nbsp;&nbsp; Nivel Actual:'
-                f' **{nivel_texto}**'
+                f'#### 📌 Competencia: *{comp}* &nbsp;&nbsp;|&nbsp;&nbsp; Nivel'
+                f' Actual: **{nivel_texto}**'
             )
-            col_m1, col_m2, col_m3 = st.columns(3)
-            with col_m1:
-              obj_70 = st.text_area(
-                  f'🛠️ 70% Experiencia ({comp}):',
+
+            # Estructura tabular limpia de matriz ejecutiva
+            mc1, mc2, mc3 = st.columns(3)
+            with mc1:
+              val_70 = st.text_input(
+                  '🛠️ Acción 70% (Experiencia):',
                   value=defaults['70'],
-                  key=f'mat_70_{comp}',
-                  height=80,
+                  key=f'dyn_70_{comp}',
               )
-            with col_m2:
-              obj_20 = st.text_area(
-                  f'👥 20% Exposición ({comp}):',
+            with mc2:
+              val_20 = st.text_input(
+                  '👥 Acción 20% (Exposición):',
                   value=defaults['20'],
-                  key=f'mat_20_{comp}',
-                  height=80,
+                  key=f'dyn_20_{comp}',
               )
-            with col_m3:
-              obj_10 = st.text_area(
-                  f'📚 10% Formación ({comp}):',
+            with mc3:
+              val_10 = st.text_input(
+                  '📚 Acción 10% (Formación):',
                   value=defaults['10'],
-                  key=f'mat_10_{comp}',
-                  height=80,
+                  key=f'dyn_10_{comp}',
               )
 
-            st.session_state.acciones_matriz[comp] = {
-                '70': obj_70,
-                '20': obj_20,
-                '10': obj_10,
+            st.session_state.acciones_matriz_dinamica[comp] = {
+                '70': val_70,
+                '20': val_20,
+                '10': val_10,
             }
             st.markdown('---')
 
@@ -553,20 +551,20 @@ else:
       col_f1, col_f2 = st.columns(2)
       with col_f1:
         firma_colab = st.checkbox(
-            f'Acepto y valido mi ruta de desarrollo ({colab})',
+            f'Acepto y valido mi matriz de desarrollo ({colab})',
             value=st.session_state.journey_firmado,
         )
       with col_f2:
         firma_gerente = st.checkbox(
-            f'Aprobar ruta como líder/gerente ({ger})',
+            f'Aprobar matriz como líder/gerente ({ger})',
             value=st.session_state.journey_firmado,
         )
 
       if firma_colab and firma_gerente:
         st.session_state.journey_firmado = True
         st.success(
-            '✅ **¡Ruta de Desarrollo Validada y Firmada Exitosamente por'
-            ' Ambas Partes!**'
+            '✅ **¡Matriz Ejecutiva de Desarrollo Validada y Firmada Exitosamente'
+            ' por Ambas Partes!**'
         )
       else:
         st.warning(
