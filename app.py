@@ -43,7 +43,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo limpio y profesional para los cargadores de archivos en el Sidebar (Sin cuadros negros) */
+    /* Estilo limpio, profesional y sin cuadros negros para los cargadores de archivos en el Sidebar */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
         border: none !important;
@@ -60,16 +60,22 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 4px !important;
     }
-    /* Neutralizar cualquier cuadro negro nativo y reemplazarlo con diseño claro y limpio */
+    /* Neutralización total de contenedores negros en archivos subidos */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
         background-color: #FFFFFF !important;
         border: 1px solid #2F3F47 !important;
         border-radius: 6px !important;
     }
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] div,
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] span,
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] small {
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] small,
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] svg {
         color: #2F3F47 !important;
-        font-weight: 600 !important;
+        fill: #2F3F47 !important;
+    }
+    /* Forzar fondo blanco y texto oscuro en el icono interno del archivo cargado */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] [data-testid="stIconMaterial"] {
+        color: #2F3F47 !important;
     }
     
     /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco */
