@@ -43,12 +43,12 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo limpio para los cargadores de archivos en el Sidebar (Sin línea punteada y colores armónicos) */
+    /* Estilo limpio para los cargadores de archivos en el Sidebar (Sin línea punteada y ocultando cajas negras) */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
         border: none !important;
         border-radius: 8px !important;
-        padding: 10px !important;
+        padding: 8px !important;
     }
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section * {
         color: #2F3F47 !important;
@@ -60,7 +60,13 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 4px !important;
     }
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] small {
+    /* Ocultar la previsualización nativa oscura cuando el archivo ya está cargado */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
+        background-color: #FFFFFF !important;
+        border-radius: 6px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] span,
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] small {
         color: #2F3F47 !important;
     }
     
@@ -208,22 +214,33 @@ if acceso_concedido and es_key_user:
   st.sidebar.markdown('*Exclusivo Key User*')
 
   file_estructura = st.sidebar.file_uploader(
-      '1. Plantilla de Estructura', type=['xlsx', 'xls']
+      '1. Plantilla de Estructura', type=['xlsx', 'xls'], key='f_est'
   )
-  if file_estructura:
-    st.session_state.df_estructura = pd.read_excel(file_estructura)
-
   file_recursos = st.sidebar.file_uploader(
-      '2. Plantilla Recursos 70/20/10', type=['xlsx', 'xls']
+      '2. Plantilla Recursos 70/20/10', type=['xlsx', 'xls'], key='f_rec'
   )
-  if file_recursos:
-    st.session_state.df_recursos = pd.read_excel(file_recursos)
-
   file_competencias = st.sidebar.file_uploader(
-      '3. Plantilla Competencias', type=['xlsx', 'xls']
+      '3. Plantilla Competencias', type=['xlsx', 'xls'], key='f_comp'
   )
-  if file_competencias:
-    st.session_state.df_competencias = pd.read_excel(file_competencias)
+
+  if st.sidebar.button('💾 Guardar Cambios de Plantillas'):
+    cambios_realizados = False
+    if file_estructura is not None:
+      st.session_state.df_estructura = pd.read_excel(file_estructura)
+      cambios_realizados = True
+    if file_recursos is not None:
+      st.session_state.df_recursos = pd.read_excel(file_recursos)
+      cambios_realizados = True
+    if file_competencias is not None:
+      st.session_state.df_competencias = pd.read_excel(file_competencias)
+      cambios_realizados = True
+
+    if cambios_realizados:
+      st.sidebar.success('¡Plantillas guardadas y actualizadas con éxito!')
+    else:
+      st.sidebar.warning(
+          'Por favor selecciona al menos un archivo para guardar cambios.'
+      )
 
   st.sidebar.markdown('---')
   with st.sidebar.expander('⚙️ Settings / Cambiar Contraseña'):
@@ -237,13 +254,15 @@ if acceso_concedido and es_key_user:
       if pass_actual == st.session_state.key_user_password:
         if len(pass_nuevo) >= 4:
           st.session_state.key_user_password = pass_nuevo
-          st.success(
+          st.sidebar.success(
               '¡Contraseña actualizada con éxito! Úsala en tu próximo acceso.'
           )
         else:
-          st.error('La nueva contraseña debe tener al menos 4 caracteres.')
+          st.sidebar.error(
+              'La nueva contraseña debe tener al menos 4 caracteres.'
+          )
       else:
-        st.error('La contraseña actual es incorrecta.')
+        st.sidebar.error('La contraseña actual es incorrecta.')
 elif acceso_concedido and not es_key_user:
   st.sidebar.markdown('🔒 *Sección de administración restringida al Key User.*')
 else:
@@ -268,20 +287,39 @@ if not acceso_concedido:
   )
 elif not archivos_cargados:
   st.warning(
-      '⚠️ El acceso es correcto, pero espera a que el Key User cargue las'
-      ' plantillas maestras en el sistema para habilitar las vistas y el'
-      ' diagnóstico.'
+      '⚠️ El acceso es correcto, pero espera a que el Key User cargue y'
+      ' guarde las plantillas maestras en el sistema para habilitar las'
+      ' vistas y el diagnóstico.'
   )
 else:
+  # Contenedores con altura uniforme (min-height) para garantizar el mismo tamaño visual
+  estilo_caja_verde = (
+      'background-color: #E6F8F2; padding: 16px; border-radius: 8px;'
+      ' border: 1px solid #62D5B1; min-height: 90px; display: flex;'
+      ' align-items: center;'
+  )
+
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
-    st.success('✅ Plantilla Estructura: Cargada')
+    st.markdown(
+        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Estructura:</b>'
+        ' Cargada</div>',
+        unsafe_allow_html=True,
+    )
   with col_s2:
-    st.success('✅ Plantilla Recursos: Cargada')
+    st.markdown(
+        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Recursos:</b>'
+        ' Cargada</div>',
+        unsafe_allow_html=True,
+    )
   with col_s3:
-    st.success('✅ Plantilla Competencias: Cargada')
+    st.markdown(
+        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Competencias:</b>'
+        ' Cargada</div>',
+        unsafe_allow_html=True,
+    )
 
-  st.markdown('---')
+  st.markdown('<br>', unsafe_allow_html=True)
 
   if es_key_user:
     # --- VISTA DE KEY USER / ADMINISTRACIÓN ---
