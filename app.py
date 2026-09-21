@@ -456,12 +456,13 @@ else:
 
     with tab_journey:
       st.markdown(
-          '### 🚀 Ruta de Desarrollo 70/20/10 (One-Pager Ejecutivo)'
+          '### 🚀 Ruta de Desarrollo 70/20/10 (One-Pager Ejecutivo con IA)'
       )
       st.write(
-          'Selecciona hasta 4 competencias prioritarias definidas por el'
-          ' gerente. Despliega cada bloque para configurar los detalles del'
-          ' modelo 70/20/10 en un formato compacto.'
+          'Selecciona hasta 4 competencias prioritarias. El motor de'
+          ' inteligencia integrada extraerá automáticamente los recursos y'
+          ' cursos específicos (uno, dos o más según aplique) desde tu plantilla'
+          ' de Excel.'
       )
 
       colab = st.session_state.get(
@@ -507,7 +508,6 @@ else:
               ),
           )
 
-          # Guardar en session state para sincronizar con la hoja de resultados
           st.session_state.competencias_prioritarias_global = (
               competencias_prioritarias
           )
@@ -524,7 +524,12 @@ else:
               st.session_state.acciones_one_pager = {}
 
             st.markdown('---')
-            st.markdown('#### 📋 Matriz Detallada (One-Pager)')
+            st.markdown(
+                '#### 📋 Asignación Inteligente de Recursos del Catálogo'
+                ' (One-Pager)'
+            )
+
+            df_rec = st.session_state.df_recursos
 
             for comp in competencias_prioritarias:
               nivel_actual = st.session_state.respuestas_usuario[comp]
@@ -534,13 +539,85 @@ else:
                   else 'Intermedio (Nivel 2)'
               )
 
+              # Filtrar recursos de la plantilla donde la competencia coincida
+              recursos_comp = pd.DataFrame()
+              if df_rec is not None:
+                # Buscar en columnas de competencias o texto general
+                cols_comp = [
+                    c
+                    for c in df_rec.columns
+                    if 'competencia' in str(c).lower()
+                ]
+                if cols_comp:
+                  recursos_comp = df_rec[
+                      df_rec[cols_comp[0]]
+                      .astype(str)
+                      .str.contains(comp, case=False, na=False)
+                  ]
+                if recursos_comp.empty:
+                  recursos_comp = df_rec[
+                      df_rec.astype(str)
+                      .apply(
+                          lambda x: x.str.contains(comp, case=False, na=False)
+                      )
+                      .any(axis=1)
+                  ]
+
+              def obtener_recursos_multiples(cat_val, default_txt):
+                if (
+                    not recursos_comp.empty
+                    and 'categoria_70_20_10' in recursos_comp.columns
+                ):
+                  match_cat = recursos_comp[
+                      recursos_comp['categoria_70_20_10'] == cat_val
+                  ]
+                  if not match_cat.empty:
+                    lista_recursos = []
+                    col_nombre = None
+                    for c_candidate in [
+                        'Nombre del recurso',
+                        'nombre_recurso',
+                        'recurso',
+                        'objetivo',
+                    ]:
+                      if c_candidate in match_cat.columns:
+                        col_nombre = c_candidate
+                        break
+
+                    for _, r_row in match_cat.iterrows():
+                      nombre_res = (
+                          str(r_row[col_nombre])
+                          if col_nombre
+                          else str(r_row.iloc[0])
+                      )
+                      obj_res = (
+                          str(r_row.get('objetivo', ''))
+                          if 'objetivo' in match_cat.columns
+                          else ''
+                      )
+                      if len(nombre_res) > 2 and nombre_res.lower() != 'nan':
+                        if obj_res and obj_res.lower() != 'nan':
+                          lista_recursos.append(
+                              f'• {nombre_res}: {obj_res}'
+                          )
+                        else:
+                          lista_recursos.append(f'• {nombre_res}')
+                    if lista_recursos:
+                      return '\n'.join(lista_recursos)
+                return default_txt
+
+              default_70 = obtener_recursos_multiples(
+                  70, f'• Proyecto práctico on-the-job enfocado en {comp}.'
+              )
+              default_20 = obtener_recursos_multiples(
+                  20, f'• Sesión de mentoría 1o1 con {ger} sobre {comp}.'
+              )
+              default_10 = obtener_recursos_multiples(
+                  10, f'• Curso digital especializado / lectura de {comp}.'
+              )
+
               defaults = st.session_state.acciones_one_pager.get(
-                  comp,
-                  {
-                      '70': f'Liderar proyecto o reto práctico en {comp}.',
-                      '20': f'Sesión de mentoría y feedback con {ger}.',
-                      '10': f'Curso digital o lectura técnica sobre {comp}.',
-                  },
+                  comp, {'70': default_70, '20': default_20, '10': default_10}
               )
 
               with st.expander(
@@ -549,24 +626,24 @@ else:
                 col_op1, col_op2, col_op3 = st.columns(3)
                 with col_op1:
                   val_70 = st.text_area(
-                      f'🛠️ 70% Experiencia:',
+                      f'🛠️ 70% Experiencia (Recursos):',
                       value=defaults['70'],
                       key=f'one_70_{comp}',
-                      height=70,
+                      height=100,
                   )
                 with col_op2:
                   val_20 = st.text_area(
-                      f'👥 20% Exposición:',
+                      f'👥 20% Exposición (Recursos):',
                       value=defaults['20'],
                       key=f'one_20_{comp}',
-                      height=70,
+                      height=100,
                   )
                 with col_op3:
                   val_10 = st.text_area(
-                      f'📚 10% Formación:',
+                      f'📚 10% Formación (Cursos):',
                       value=defaults['10'],
                       key=f'one_10_{comp}',
-                      height=70,
+                      height=100,
                   )
 
                 st.session_state.acciones_one_pager[comp] = {
@@ -645,7 +722,6 @@ else:
         st.dataframe(df_resultados, use_container_width=True)
         st.markdown('---')
 
-        # --- DOS GRÁFICOS SPIDER: COMPLETO Y PRIORITARIO ---
         col_sp1, col_sp2 = st.columns(2)
 
         with col_sp1:
