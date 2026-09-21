@@ -80,9 +80,13 @@ KEY_USER_EMAIL = 'antonio.armendariz@innodep.com.mx'
 if 'key_user_password' not in st.session_state:
   st.session_state.key_user_password = 'admin2026'
 
-# Control de sesión activa para permitir el botón "Salir"
+# Control de sesión activa
 if 'sesion_iniciada' not in st.session_state:
   st.session_state.sesion_iniciada = False
+if 'es_key_user' not in st.session_state:
+  st.session_state.es_key_user = False
+if 'email_actual' not in st.session_state:
+  st.session_state.email_actual = ''
 
 # Inicializar estados en memoria si no existen
 if 'df_estructura' not in st.session_state:
@@ -96,54 +100,63 @@ if 'respuestas_usuario' not in st.session_state:
 if 'journey_firmado' not in st.session_state:
   st.session_state.journey_firmado = False
 
-# --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ---
+# --- BARRA LATERAL: IDENTIFICACIÓN Y ACCESO ORDENADO ---
 st.sidebar.markdown('## 👤 Acceso al Sistema (#)')
 
 if st.session_state.sesion_iniciada:
   st.sidebar.success(
-      f'Sesión activa como: **{st.session_state.get("email_actual", "")}** (#)'
+      f'Sesión activa como: **{st.session_state.email_actual}** (#)'
   )
   if st.sidebar.button('🚪 Cerrar Sesión / Cambiar Perfil (#)'):
     st.session_state.sesion_iniciada = False
-    st.session_state.email_ingresado_temp = ''
-    st.session_state.password_ingresado_temp = ''
+    st.session_state.es_key_user = False
+    st.session_state.email_actual = ''
     st.rerun()
   st.sidebar.markdown('---')
-
-email_ingresado = st.sidebar.text_input(
-    'Correo corporativo (#):',
-    value='antonio.armendariz@innodep.com.mx',
-    key='email_ingresado_temp',
-)
-password_ingresado = st.sidebar.text_input(
-    'Contraseña (#):', type='password', value='', key='password_ingresado_temp'
-)
-
-# Validación de acceso y roles
-es_key_user = False
-acceso_concedido = False
-
-if email_ingresado.strip().lower() == KEY_USER_EMAIL.lower():
-  if password_ingresado == st.session_state.key_user_password:
-    es_key_user = True
-    acceso_concedido = True
-    st.session_state.sesion_iniciada = True
-    st.session_state.email_actual = email_ingresado
-    st.sidebar.success('Perfil: Key User (Antonio Armendariz) (#)')
-  else:
-    if password_ingresado != '':
-      st.sidebar.error('Contraseña de Key User incorrecta (#).')
 else:
-  if len(email_ingresado) > 5 and len(password_ingresado) > 0:
-    acceso_concedido = True
-    st.session_state.sesion_iniciada = True
-    st.session_state.email_actual = email_ingresado
-    st.sidebar.info('Perfil: Usuario General (#)')
+  email_ingresado = st.sidebar.text_input(
+      'Correo corporativo (#):',
+      value='antonio.armendariz@innodep.com.mx',
+      key='email_ingresado_temp',
+  )
+  password_ingresado = st.sidebar.text_input(
+      'Contraseña (#):',
+      type='password',
+      value='',
+      key='password_ingresado_temp',
+  )
 
-st.sidebar.markdown('---')
+  if st.sidebar.button('🔑 Ingresar al Sistema (#)'):
+    email_limpio = email_ingresado.strip().lower()
+    if email_limpio == KEY_USER_EMAIL.lower():
+      if password_ingresado == st.session_state.key_user_password:
+        st.session_state.sesion_iniciada = True
+        st.session_state.es_key_user = True
+        st.session_state.email_actual = email_ingresado
+        st.sidebar.success('¡Acceso concedido como Key User! (#)')
+        st.rerun()
+      else:
+        st.sidebar.error('Contraseña de Key User incorrecta (#).')
+    else:
+      if len(email_limpio) > 5 and len(password_ingresado) > 0:
+        st.session_state.sesion_iniciada = True
+        st.session_state.es_key_user = False
+        st.session_state.email_actual = email_ingresado
+        st.sidebar.success('¡Acceso concedido como Usuario General! (#)')
+        st.rerun()
+      else:
+        st.sidebar.warning(
+            'Ingresa un correo válido y una contraseña para continuar (#).'
+        )
+
+  st.sidebar.markdown('---')
+
+# Asignar variables de control actuales
+es_key_user = st.session_state.es_key_user
+acceso_concedido = st.session_state.sesion_iniciada
 
 # --- PANEL DE PERSONALIZACIÓN Y CARGA (EXCLUSIVO KEY USER) ---
-if es_key_user and st.session_state.sesion_iniciada:
+if acceso_concedido and es_key_user:
   st.sidebar.markdown('### 🖼️ Identidad Visual (#)')
 
   logo_file = st.sidebar.file_uploader(
@@ -202,17 +215,14 @@ if es_key_user and st.session_state.sesion_iniciada:
           )
       else:
         st.error('La contraseña actual es incorrecta (#).')
+elif acceso_concedido and not es_key_user:
+  st.sidebar.markdown(
+      '🔒 *Sección de administración restringida al Key User.* (#)'
+  )
 else:
-  if not st.session_state.sesion_iniciada:
-    st.sidebar.markdown(
-        '🔒 *Inicia sesión con un correo y contraseña válidos para habilitar'
-        ' las funciones.* (#)'
-    )
-  else:
-    st.sidebar.markdown(
-        '🔒 *La sección de Carga y Parametrización está restringida'
-        ' exclusivamente al Key User.* (#)'
-    )
+  st.sidebar.markdown(
+      '🔒 *Inicia sesión con tus credenciales para habilitar los paneles.* (#)'
+  )
 
 # --- VERIFICACIÓN DE DATOS CARGADOS ---
 archivos_cargados = (
@@ -228,8 +238,8 @@ st.markdown(
 
 if not acceso_concedido:
   st.warning(
-      '⚠️ Por favor, ingresa tu correo y contraseña válidos en la barra lateral'
-      ' para acceder al sistema. (#)'
+      '⚠️ Por favor, ingresa tu correo y contraseña en la barra lateral y'
+      ' presiona **"Ingresar al Sistema"** para comenzar. (#)'
   )
 elif not archivos_cargados:
   st.warning(
@@ -433,7 +443,6 @@ else:
                 f' Actual: **{nivel_texto}** (#)'
             )
 
-            # Estructura en 3 columnas limpias para 70, 20 y 10
             col_70, col_20, col_10 = st.columns(3)
 
             with col_70:
@@ -487,7 +496,6 @@ else:
                   height=100,
               )
 
-            # Sección para agregar actividad manual adicional por competencia
             with st.expander(
                 f'➕ Agregar actividad manual adicional para: {comp} (#)'
             ):
@@ -500,7 +508,6 @@ else:
                   ),
               )
 
-            # Guardar configuración en memoria
             st.session_state.acciones_personalizadas[comp] = {
                 '70_activo': ck_70,
                 '70_desc': obj_70,
