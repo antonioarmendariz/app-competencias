@@ -43,7 +43,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo limpio para los cargadores de archivos en el Sidebar (Sin línea punteada y ocultando cajas negras) */
+    /* Estilo limpio para los cargadores de archivos en el Sidebar */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
         border: none !important;
@@ -60,7 +60,6 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 4px !important;
     }
-    /* Ocultar la previsualización nativa oscura cuando el archivo ya está cargado */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
         background-color: #FFFFFF !important;
         border-radius: 6px !important;
@@ -70,7 +69,7 @@ st.markdown(
         color: #2F3F47 !important;
     }
     
-    /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco para alto contraste */
+    /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco */
     [data-testid="stSidebar"] {
         background-color: #2F3F47;
     }
@@ -85,7 +84,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Inputs de texto en sidebar para asegurar legibilidad oscura sobre fondo claro */
+    /* Inputs de texto en sidebar para asegurar legibilidad */
     [data-testid="stSidebar"] input {
         color: #2F3F47 !important;
         background-color: #FFFFFF !important;
@@ -292,7 +291,6 @@ elif not archivos_cargados:
       ' vistas y el diagnóstico.'
   )
 else:
-  # Contenedores con altura uniforme (min-height) para garantizar el mismo tamaño visual
   estilo_caja_verde = (
       'background-color: #E6F8F2; padding: 16px; border-radius: 8px;'
       ' border: 1px solid #62D5B1; min-height: 90px; display: flex;'
@@ -360,10 +358,10 @@ else:
       st.dataframe(st.session_state.df_competencias, use_container_width=True)
 
   else:
-    # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, JOURNEY Y RESULTADOS ---
+    # --- VISTA DE USUARIO GENERAL / AUTODIAGNÓSTICO, RUTA Y RESULTADOS ---
     tab_diag, tab_journey, tab_res = st.tabs([
         '📝 Autodiagnóstico de Competencias',
-        '🚀 Matriz y Journey Estructurado 70/20/10',
+        '🚀 Ruta de Desarrollo 70/20/10',
         '📊 Mis Resultados y Gráfico Spider',
     ])
 
@@ -440,17 +438,16 @@ else:
         st.session_state.nombre_colaborador = nombre_colaborador
         st.session_state.nombre_gerente = nombre_gerente
         st.success(
-            '¡Evaluación guardada con éxito! Ya puedes revisar tu Journey'
-            ' estructurado y el Gráfico Spider en las pestañas superiores.'
+            '¡Evaluación guardada con éxito! Ya puedes revisar tu Ruta de'
+            ' Desarrollo y el Gráfico Spider en las pestañas superiores.'
         )
 
     with tab_journey:
-      st.markdown('### 🚀 Journey de Desarrollo Estructurado (70/20/10)')
+      st.markdown('### 🚀 Ruta de Desarrollo 70/20/10')
       st.write(
-          'Para cada competencia en desarrollo, revisa los tres pilares'
-          ' organizados en columnas. Puedes **desmarcar** actividades que no'
-          ' apliquen, **editar sus objetivos** o **agregar actividades'
-          ' adicionales** a mano antes de firmar el plan definitivo.'
+          'Matriz estructurada de acciones de desarrollo para tus áreas de'
+          ' oportunidad. Puedes revisar y editar los objetivos de 70%,'
+          ' 20% y 10% antes de validar y firmar el plan definitivo.'
       )
 
       colab = st.session_state.get(
@@ -466,9 +463,9 @@ else:
 
       if not st.session_state.respuestas_usuario:
         st.warning(
-            '⚠️ Para configurar el Journey, por favor completa primero tu'
-            ' **Autodiagnóstico de Competencias** en la primera pestaña y haz'
-            ' clic en Guardar.'
+            '⚠️ Para configurar la Ruta de Desarrollo, por favor completa'
+            ' primero tu **Autodiagnóstico de Competencias** en la primera'
+            ' pestaña y haz clic en Guardar.'
         )
       else:
         competencias_a_desarrollar = [
@@ -484,9 +481,10 @@ else:
               ' avanzada y proyectos de innovación.'
           )
         else:
-          if 'acciones_personalizadas' not in st.session_state:
-            st.session_state.acciones_personalizadas = {}
+          if 'acciones_matriz' not in st.session_state:
+            st.session_state.acciones_matriz = {}
 
+          datos_matriz = []
           for comp in competencias_a_desarrollar:
             nivel_actual = st.session_state.respuestas_usuario[comp]
             nivel_texto = (
@@ -495,111 +493,83 @@ else:
                 else 'Intermedio (Nivel 2)'
             )
 
-            st.markdown(
-                f'### 🎯 Competencia: *{comp}* &nbsp;&nbsp;|&nbsp;&nbsp; Nivel'
-                f' Actual: **{nivel_texto}**'
+            # Recuperar o inicializar valores en memoria
+            defaults = st.session_state.acciones_matriz.get(
+                comp,
+                {
+                    '70': (
+                        f'Liderar proyecto o reto práctico on-the-job en'
+                        f' {comp}.'
+                    ),
+                    '20': f'Sesión de mentoría y feedback 1o1 con {ger}.',
+                    '10': f'Revisión de guías técnicas o curso digital sobre {comp}.',
+                },
             )
 
-            col_70, col_20, col_10 = st.columns(3)
-
-            with col_70:
-              st.markdown('#### 🛠️ 70% Experiencia (Práctica)')
-              ck_70 = st.checkbox(
-                  'Incluir actividad 70%', value=True, key=f'cb_70_{comp}'
-              )
+            st.markdown(
+                f'#### 🎯 {comp} &nbsp;&nbsp;|&nbsp;&nbsp; Nivel Actual:'
+                f' **{nivel_texto}**'
+            )
+            col_m1, col_m2, col_m3 = st.columns(3)
+            with col_m1:
               obj_70 = st.text_area(
-                  'Objetivo / Acción 70%:',
-                  value=(
-                      f'Liderar un proyecto o reto práctico on-the-job'
-                      f' enfocado en resolver situaciones reales de {comp}.'
-                  ),
-                  key=f'txt_70_{comp}',
-                  height=100,
+                  f'🛠️ 70% Experiencia ({comp}):',
+                  value=defaults['70'],
+                  key=f'mat_70_{comp}',
+                  height=80,
               )
-
-            with col_20:
-              st.markdown('#### 👥 20% Exposición (Social)')
-              ck_20 = st.checkbox(
-                  'Incluir actividad 20%', value=True, key=f'cb_20_{comp}'
-              )
+            with col_m2:
               obj_20 = st.text_area(
-                  'Objetivo / Acción 20%:',
-                  value=(
-                      f'Sesión de mentoría y feedback 1o1 con {ger} para'
-                      f' revisar avances y mejores prácticas en {comp}.'
-                  ),
-                  key=f'txt_20_{comp}',
-                  height=100,
+                  f'👥 20% Exposición ({comp}):',
+                  value=defaults['20'],
+                  key=f'mat_20_{comp}',
+                  height=80,
               )
-
-            with col_10:
-              st.markdown('#### 📚 10% Formación (Formal)')
-              ck_10 = st.checkbox(
-                  'Incluir actividad 10%', value=True, key=f'cb_10_{comp}'
-              )
+            with col_m3:
               obj_10 = st.text_area(
-                  'Objetivo / Acción 10%:',
-                  value=(
-                      f'Revisión de guías técnicas, lecturas especializadas o'
-                      f' curso digital sobre {comp}.'
-                  ),
-                  key=f'txt_10_{comp}',
-                  height=100,
+                  f'📚 10% Formación ({comp}):',
+                  value=defaults['10'],
+                  key=f'mat_10_{comp}',
+                  height=80,
               )
 
-            with st.expander(
-                f'➕ Agregar actividad manual adicional para: {comp}'
-            ):
-              obj_manual = st.text_input(
-                  'Descripción de la actividad extra:',
-                  value='',
-                  key=f'manual_extra_{comp}',
-                  placeholder=(
-                      'Ej. Certificación externa, asistencia a taller, etc.'
-                  ),
-              )
-
-            st.session_state.acciones_personalizadas[comp] = {
-                '70_activo': ck_70,
-                '70_desc': obj_70,
-                '20_activo': ck_20,
-                '20_desc': obj_20,
-                '10_activo': ck_10,
-                '10_desc': obj_10,
-                'extra': obj_manual,
+            st.session_state.acciones_matriz[comp] = {
+                '70': obj_70,
+                '20': obj_20,
+                '10': obj_10,
             }
-
             st.markdown('---')
 
-      st.markdown('### ✍️ Validación y Firma Digital del Journey')
+      st.markdown('### ✍️ Validación y Firma Digital del Plan')
 
       col_f1, col_f2 = st.columns(2)
       with col_f1:
         firma_colab = st.checkbox(
-            f'Acepto y valido mi plan estructurado ({colab})',
+            f'Acepto y valido mi ruta de desarrollo ({colab})',
             value=st.session_state.journey_firmado,
         )
       with col_f2:
         firma_gerente = st.checkbox(
-            f'Aprobar plan estructurado como líder/gerente ({ger})',
+            f'Aprobar ruta como líder/gerente ({ger})',
             value=st.session_state.journey_firmado,
         )
 
       if firma_colab and firma_gerente:
         st.session_state.journey_firmado = True
         st.success(
-            '✅ **¡Journey Estructurado, Firmado y Validado Exitosamente por'
-            ' Ambas Partes!** Tus ajustes y actividades manuales se han'
-            ' registrado correctamente.'
+            '✅ **¡Ruta de Desarrollo Validada y Firmada Exitosamente por'
+            ' Ambas Partes!**'
         )
       else:
         st.warning(
-            '⚠️ Ambas partes (Colaborador y Gerente) deben marcar la casilla'
-            ' de aceptación para formalizar la firma definitiva del Journey.'
+            '⚠️ Ambas partes deben marcar la casilla de aceptación para'
+            ' formalizar la firma definitiva.'
         )
 
     with tab_res:
-      st.markdown('### 📊 Reporte de Resultados y Gráfico Spider')
+      st.markdown(
+          '### 📊 Reporte de Resultados, Matriz Consolidada y Gráfico Spider'
+      )
 
       if not st.session_state.respuestas_usuario:
         st.warning(
@@ -623,24 +593,39 @@ else:
             columns=['Competencia', 'Nivel'],
         )
 
-        col_r1, col_r2 = st.columns([1, 1.2])
-
-        with col_r1:
-          st.markdown('#### Detalle de Puntuaciones')
-          st.dataframe(df_resultados, use_container_width=True)
-          promedio = df_resultados['Nivel'].mean()
-          st.metric('Promedio General de Dominio', f'{promedio:.2f} / 3.0')
+        # 1. MATRIZ CONSOLIDADA ARRIBA
+        st.markdown('#### 📋 Matriz Consolidada de Puntuaciones y Estatus')
+        promedio = df_resultados['Nivel'].mean()
+        col_m_info1, col_m_info2 = st.columns(2)
+        with col_m_info1:
+          st.metric(
+              'Promedio General de Dominio', f'{promedio:.2f} / 3.0'
+          )
+        with col_m_info2:
           if st.session_state.journey_firmado:
-            st.success('🔒 Estatus: Journey Estructurado, Firmado y Validado')
+            st.success('🔒 Estatus: Ruta Validada y Firmada')
           else:
-            st.warning(
-                '🔓 Estatus: Pendiente de Estructurar y Firmar Journey'
-            )
+            st.warning('🔓 Estatus: Pendiente de Validar y Firmar')
 
-        with col_r2:
-          st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
+        st.dataframe(df_resultados, use_container_width=True)
+        st.markdown('---')
+
+        # 2. SELECTOR TIPO LISTBOX PARA COMPETENCIAS EN EL GRÁFICO
+        st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
+        todas_competencias = df_resultados['Competencia'].tolist()
+        competencias_seleccionadas = st.multiselect(
+            'Selecciona las competencias a visualizar en el gráfico de'
+            ' radar:',
+            options=todas_competencias,
+            default=todas_competencias,
+        )
+
+        if competencias_seleccionadas:
+          df_filtrado = df_resultados[
+              df_resultados['Competencia'].isin(competencias_seleccionadas)
+          ]
           fig = px.line_polar(
-              df_resultados,
+              df_filtrado,
               r='Nivel',
               theta='Competencia',
               line_close=True,
@@ -662,5 +647,10 @@ else:
               showlegend=False,
           )
           st.plotly_chart(fig, use_container_width=True)
+        else:
+          st.warning(
+              '⚠️ Selecciona al menos una competencia para mostrar el gráfico'
+              ' de radar.'
+          )
 
-        st.success('✨ Gráfico Spider generado correctamente.')
+        st.success('✨ Reporte y matriz generados correctamente.')
