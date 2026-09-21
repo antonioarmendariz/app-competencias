@@ -303,7 +303,6 @@ elif not archivos_cargados:
       ' vistas y el diagnóstico.'
   )
 else:
-  # Estilo flex con white-space nowrap para forzar una sola línea limpia
   estilo_caja_verde = (
       'background-color: #E6F8F2; padding: 14px 12px; border-radius: 8px;'
       ' border: 1px solid #62D5B1; min-height: 75px; display: flex;'
@@ -320,13 +319,13 @@ else:
     )
   with col_s2:
     st.markdown(
-        f'<div style="{estilo_caja_verde}"><span>✅ <b>Plantilla'
+        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla'
         ' Recursos:</b></span> <span>Cargada</span></div>',
         unsafe_allow_html=True,
     )
   with col_s3:
     st.markdown(
-        f'<div style="{estilo_caja_verde}"><span>✅ <b>Plantilla'
+        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla'
         ' Competencias:</b></span> <span>Cargada</span></div>',
         unsafe_allow_html=True,
     )
@@ -679,7 +678,7 @@ else:
 
     with tab_res:
       st.markdown(
-          '### 📊 Reporte de Resultados, Matriz Consolidada y Gráficos Spider'
+          '### 📊 Reporte Ejecutivo de Resultados y Gráficos Spider'
       )
 
       if not st.session_state.respuestas_usuario:
@@ -718,6 +717,43 @@ else:
             st.warning('🔓 Estatus: Pendiente de Validar y Firmar')
 
         st.dataframe(df_resultados, use_container_width=True)
+        st.markdown('---')
+
+        # --- OPCIÓN PARA INCLUIR LA RUTA DE DESARROLLO EN EL REPORTE ---
+        incluir_ruta_reporte = st.checkbox(
+            '📄 Incluir Ruta de Desarrollo 70/20/10 (One-Pager) en este reporte'
+            ' para visualización e impresión',
+            value=True,
+        )
+
+        if incluir_ruta_reporte:
+          st.markdown('---')
+          st.markdown('#### 🚀 Detalle de la Ruta de Desarrollo (70/20/10)')
+          prioritarias_rep = st.session_state.get(
+              'competencias_prioritarias_global', []
+          )
+          acciones_rep = st.session_state.get('acciones_one_pager', {})
+
+          if prioritarias_rep:
+            for comp in prioritarias_rep:
+              detalles = acciones_rep.get(comp, {'70': '', '20': '', '10': ''})
+              st.markdown(f'##### 📌 {comp}')
+              rc1, rc2, rc3 = st.columns(3)
+              with rc1:
+                st.markdown('**🛠️ 70% Experiencia:**')
+                st.info(detalles['70'])
+              with rc2:
+                st.markdown('**👥 20% Exposición:**')
+                st.info(detalles['20'])
+              with rc3:
+                st.markdown('**📚 10% Formación:**')
+                st.info(detalles['10'])
+          else:
+            st.info(
+                'ℹ️ No hay competencias prioritarias seleccionadas en la pestaña'
+                ' de Ruta de Desarrollo.'
+            )
+
         st.markdown('---')
 
         col_sp1, col_sp2 = st.columns(2)
@@ -833,6 +869,6 @@ else:
             )
 
         st.success(
-            '✨ Reporte y gráficos Spider generados y sincronizados'
-            ' correctamente.'
+            '✨ Reporte ejecutivo, matriz y gráficos Spider generados y'
+            ' sincronizados correctamente.'
         )
