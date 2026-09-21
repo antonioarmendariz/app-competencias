@@ -43,18 +43,25 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo para los botones de carga de archivos en el Sidebar (#62D5B1 con letras blancas) */
+    /* Estilo limpio para los cargadores de archivos en el Sidebar (Sin línea punteada y colores armónicos) */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
-        border: 2px dashed #FFFFFF !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
     }
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section * {
-        color: #FFFFFF !important;
+        color: #2F3F47 !important;
     }
     [data-testid="stSidebar"] [data-testid="stFileUploader"] button {
         background-color: #FFFFFF !important;
         color: #2F3F47 !important;
-        font-weight: bold;
+        border: none !important;
+        font-weight: bold !important;
+        border-radius: 4px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] small {
+        color: #2F3F47 !important;
     }
     
     /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco para alto contraste */
