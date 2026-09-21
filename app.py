@@ -303,29 +303,31 @@ elif not archivos_cargados:
       ' vistas y el diagnóstico.'
   )
 else:
+  # Estilo flex con white-space nowrap para forzar una sola línea limpia
   estilo_caja_verde = (
-      'background-color: #E6F8F2; padding: 16px; border-radius: 8px;'
-      ' border: 1px solid #62D5B1; min-height: 90px; display: flex;'
-      ' align-items: center;'
+      'background-color: #E6F8F2; padding: 14px 12px; border-radius: 8px;'
+      ' border: 1px solid #62D5B1; min-height: 75px; display: flex;'
+      ' align-items: center; justify-content: space-between;'
+      ' white-space: nowrap; font-size: 13px; font-weight: 500;'
   )
 
   col_s1, col_s2, col_s3 = st.columns(3)
   with col_s1:
     st.markdown(
-        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Estructura:</b>'
-        ' Cargada</div>',
+        f'<div style="{estilo_caja_verde}"><span>✅ <b>Plantilla'
+        ' Estructura:</b></span> <span>Cargada</span></div>',
         unsafe_allow_html=True,
     )
   with col_s2:
     st.markdown(
-        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Recursos:</b>'
-        ' Cargada</div>',
+        f'<div style="{estilo_caja_verde}"><span>✅ <b>Plantilla'
+        ' Recursos:</b></span> <span>Cargada</span></div>',
         unsafe_allow_html=True,
     )
   with col_s3:
     st.markdown(
-        f'<div style="{estilo_caja_verde}">✅ <b>Plantilla Competencias:</b>'
-        ' Cargada</div>',
+        f'<div style="{estilo_caja_verde}"><span>✅ <b>Plantilla'
+        ' Competencias:</b></span> <span>Cargada</span></div>',
         unsafe_allow_html=True,
     )
 
@@ -720,7 +722,7 @@ else:
 
         col_sp1, col_sp2 = st.columns(2)
 
-        # 1. SPIDER COMPLETO CON LÍNEA DE NIVEL ESPERADO (VERDE #1A4E45 CONTINUA)
+        # 1. SPIDER COMPLETO
         with col_sp1:
           st.markdown('#### 🕸️ Spider Completo (Todas las Competencias)')
           df_completo_plot = df_resultados.copy()
@@ -768,7 +770,7 @@ else:
           )
           st.plotly_chart(fig_completo, use_container_width=True)
 
-        # 2. SPIDER DE PRIORITARIAS CON LÍNEA DE NIVEL ESPERADO (VERDE #1A4E45 CONTINUA)
+        # 2. SPIDER DE PRIORITARIAS
         with col_sp2:
           st.markdown(
               '#### 🎯 Spider de Competencias Prioritarias (One-Pager)'
