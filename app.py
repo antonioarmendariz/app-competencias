@@ -43,7 +43,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
     
-    /* Estilo limpio para los cargadores de archivos en el Sidebar */
+    /* Estilo limpio y profesional para los cargadores de archivos en el Sidebar (Sin cuadros negros) */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] section {
         background-color: #62D5B1 !important;
         border: none !important;
@@ -60,13 +60,16 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 4px !important;
     }
+    /* Neutralizar cualquier cuadro negro nativo y reemplazarlo con diseño claro y limpio */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
         background-color: #FFFFFF !important;
+        border: 1px solid #2F3F47 !important;
         border-radius: 6px !important;
     }
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] span,
     [data-testid="stSidebar"] [data-testid="stFileUploader"] [data-testid="stUploadedFile"] small {
         color: #2F3F47 !important;
+        font-weight: 600 !important;
     }
     
     /* Sidebar: Fondo oscuro institucional con forzado estricto de texto blanco */
@@ -484,7 +487,6 @@ else:
           if 'acciones_matriz' not in st.session_state:
             st.session_state.acciones_matriz = {}
 
-          datos_matriz = []
           for comp in competencias_a_desarrollar:
             nivel_actual = st.session_state.respuestas_usuario[comp]
             nivel_texto = (
@@ -493,7 +495,6 @@ else:
                 else 'Intermedio (Nivel 2)'
             )
 
-            # Recuperar o inicializar valores en memoria
             defaults = st.session_state.acciones_matriz.get(
                 comp,
                 {
@@ -593,7 +594,6 @@ else:
             columns=['Competencia', 'Nivel'],
         )
 
-        # 1. MATRIZ CONSOLIDADA ARRIBA
         st.markdown('#### 📋 Matriz Consolidada de Puntuaciones y Estatus')
         promedio = df_resultados['Nivel'].mean()
         col_m_info1, col_m_info2 = st.columns(2)
@@ -610,7 +610,6 @@ else:
         st.dataframe(df_resultados, use_container_width=True)
         st.markdown('---')
 
-        # 2. SELECTOR TIPO LISTBOX PARA COMPETENCIAS EN EL GRÁFICO
         st.markdown('#### 🕸️ Gráfico Spider (Radar de Competencias)')
         todas_competencias = df_resultados['Competencia'].tolist()
         competencias_seleccionadas = st.multiselect(
