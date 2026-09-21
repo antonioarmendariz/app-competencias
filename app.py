@@ -456,12 +456,11 @@ else:
 
     with tab_journey:
       st.markdown(
-          '### 🚀 Ruta de Desarrollo 70/20/10 (One-Pager Ejecutivo con IA)'
+          '### 🚀 Ruta de Desarrollo 70/20/10 (One-Pager Ejecutivo)'
       )
       st.write(
-          'Selecciona hasta 4 competencias prioritarias. El motor de'
-          ' inteligencia integrada extraerá automáticamente los recursos y'
-          ' cursos específicos (uno, dos o más según aplique) desde tu plantilla'
+          'Selecciona hasta 4 competencias prioritarias. El sistema extraerá'
+          ' automáticamente los recursos y cursos específicos desde tu plantilla'
           ' de Excel.'
       )
 
@@ -525,8 +524,7 @@ else:
 
             st.markdown('---')
             st.markdown(
-                '#### 📋 Asignación Inteligente de Recursos del Catálogo'
-                ' (One-Pager)'
+                '#### 📋 Recursos Asignados desde el Catálogo (One-Pager)'
             )
 
             df_rec = st.session_state.df_recursos
@@ -539,10 +537,8 @@ else:
                   else 'Intermedio (Nivel 2)'
               )
 
-              # Filtrar recursos de la plantilla donde la competencia coincida
               recursos_comp = pd.DataFrame()
               if df_rec is not None:
-                # Buscar en columnas de competencias o texto general
                 cols_comp = [
                     c
                     for c in df_rec.columns
@@ -620,6 +616,7 @@ else:
                   comp, {'70': default_70, '20': default_20, '10': default_10}
               )
 
+              # Expander con el NOMBRE REAL de la competencia
               with st.expander(
                   f'📌 {comp} — Nivel Actual: {nivel_texto}', expanded=True
               ):
@@ -724,32 +721,55 @@ else:
 
         col_sp1, col_sp2 = st.columns(2)
 
+        # 1. SPIDER COMPLETO CON LÍNEA DE NIVEL ESPERADO (AZUL)
         with col_sp1:
           st.markdown('#### 🕸️ Spider Completo (Todas las Competencias)')
+          df_completo_plot = df_resultados.copy()
+          df_completo_plot['Tipo'] = 'Nivel Actual'
+
+          df_meta_completo = df_resultados[['Competencia']].copy()
+          df_meta_completo['Nivel'] = 3
+          df_meta_completo['Tipo'] = 'Nivel Esperado (Meta)'
+
+          df_plot_c = pd.concat([df_completo_plot, df_meta_completo])
+
           fig_completo = px.line_polar(
-              df_resultados,
+              df_plot_c,
               r='Nivel',
               theta='Competencia',
+              color='Tipo',
               line_close=True,
-              range_r=[0, 3],
+              range_r=[0, 3.2],
+              color_discrete_map={
+                  'Nivel Actual': '#FF7600',
+                  'Nivel Esperado (Meta)': '#1F77B4',
+              },
           )
           fig_completo.update_traces(
               fill='toself',
-              line_color='#2F3F47',
-              fillcolor='rgba(47, 63, 71, 0.3)',
+              fillcolor='rgba(98, 213, 177, 0.3)',
+              selector=dict(name='Nivel Actual'),
+          )
+          fig_completo.update_traces(
+              fill='none',
+              line=dict(dash='dash', width=2),
+              selector=dict(name='Nivel Esperado (Meta)'),
           )
           fig_completo.update_layout(
               polar=dict(
-                  radialaxis=dict(visible=True, range=[0, 3], color='#2F3F47'),
+                  radialaxis=dict(visible=True, range=[0, 3.2], color='#2F3F47'),
                   bgcolor='#FFFFFF',
               ),
               paper_bgcolor='#FFFFFF',
               plot_bgcolor='#FFFFFF',
               font=dict(color='#2F3F47'),
-              showlegend=False,
+              legend=dict(
+                  title='', orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1
+              ),
           )
           st.plotly_chart(fig_completo, use_container_width=True)
 
+        # 2. SPIDER DE PRIORITARIAS CON LÍNEA DE NIVEL ESPERADO (AZUL)
         with col_sp2:
           st.markdown(
               '#### 🎯 Spider de Competencias Prioritarias (One-Pager)'
@@ -760,28 +780,48 @@ else:
           if prioritarias:
             df_prioritarias = df_resultados[
                 df_resultados['Competencia'].isin(prioritarias)
-            ]
+            ].copy()
+            df_prioritarias['Tipo'] = 'Nivel Actual'
+
+            df_meta_prio = df_prioritarias[['Competencia']].copy()
+            df_meta_prio['Nivel'] = 3
+            df_meta_prio['Tipo'] = 'Nivel Esperado (Meta)'
+
+            df_plot_p = pd.concat([df_prioritarias, df_meta_prio])
+
             fig_prioritarias = px.line_polar(
-                df_prioritarias,
+                df_plot_p,
                 r='Nivel',
                 theta='Competencia',
+                color='Tipo',
                 line_close=True,
-                range_r=[0, 3],
+                range_r=[0, 3.2],
+                color_discrete_map={
+                    'Nivel Actual': '#FF7600',
+                    'Nivel Esperado (Meta)': '#1F77B4',
+                },
             )
             fig_prioritarias.update_traces(
                 fill='toself',
-                line_color='#FF7600',
-                fillcolor='rgba(98, 213, 177, 0.5)',
+                fillcolor='rgba(98, 213, 177, 0.4)',
+                selector=dict(name='Nivel Actual'),
+            )
+            fig_prioritarias.update_traces(
+                fill='none',
+                line=dict(dash='dash', width=2),
+                selector=dict(name='Nivel Esperado (Meta)'),
             )
             fig_prioritarias.update_layout(
                 polar=dict(
-                    radialaxis=dict(visible=True, range=[0, 3], color='#2F3F47'),
+                    radialaxis=dict(visible=True, range=[0, 3.2], color='#2F3F47'),
                     bgcolor='#FFFFFF',
                 ),
                 paper_bgcolor='#FFFFFF',
                 plot_bgcolor='#FFFFFF',
                 font=dict(color='#2F3F47'),
-                showlegend=False,
+                legend=dict(
+                    title='', orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1
+                ),
             )
             st.plotly_chart(fig_prioritarias, use_container_width=True)
           else:
