@@ -17,6 +17,7 @@ if "empresas" not in st.session_state:
                 "Plantilla_Modelo_Competencias",
                 "Plantilla_Recursos_70_20_10",
             ],
+            "archivos_plantillas": {},
             "admin": "antonio.armendariz@innodep.com.mx",
         }
     }
@@ -50,7 +51,6 @@ if not st.session_state.logged_in:
     password = st.sidebar.text_input("Contraseña:", type="password")
 
     if st.sidebar.button("🔑 Ingresar al Sistema", use_container_width=True):
-        # Validar usuarios registrados en la plataforma (incluyendo Key Users globales adicionales)
         if (
             correo in st.session_state.usuarios
             and st.session_state.usuarios[correo]["password"] == password
@@ -85,14 +85,13 @@ else:
 
 # 4. Cuerpo Principal de la Aplicación
 if not st.session_state.logged_in:
-    # Portada Comercial
     st.markdown(
         """
         <h1 style='color: #2F3F47; font-size: 3rem; margin-bottom: 0px;'>
             🎯 Skala
         </h1>
         <p style='color: #666666; font-size: 1.2rem; margin-top: 0px; font-weight: 500;'>
-            Sistema de Gestión de Desarrollo de Talento &nbsp;|&nbsp; <span style='font-size: 1rem; color: #888888;'>Diseñado por INNODEP</span>
+            Sistema de Gestión de Desarrollo de Talento &nbsp;|&nbsp; <span style='font-size: 1rem; color: #888888;'>Diseñado por INNODEP</span>[cite: 2]
         </p>
     """,
         unsafe_allow_html=True,
@@ -104,12 +103,11 @@ if not st.session_state.logged_in:
     )
 
 else:
-    # Encabezado dentro del sistema
     st.markdown(f"# 🎯 Skala - Panel de Control ({st.session_state.user_empresa})")
     st.markdown("---")
 
     # ----------------------------------------------------
-    # VISTA 1: KEY USER GLOBAL (Antonio y otros Key Users)
+    # VISTA 1: KEY USER GLOBAL
     # ----------------------------------------------------
     if st.session_state.user_rol == "KeyUserGlobal":
         st.markdown(
@@ -119,15 +117,15 @@ else:
 
         tab1, tab2 = st.tabs(
             [
-                "🏢 Alta de Empresas (Plantillas Base)",
+                "🏢 Alta de Empresas (Subida de Plantillas)",
                 "👥 Gestión de Key Users & Admins",
             ]
         )
 
         with tab1:
             st.markdown(
-                "Registra una nueva empresa cliente. Por defecto se asignan las"
-                " tres plantillas base estándar."
+                "Registra una nueva empresa cliente y carga los archivos"
+                " iniciales para las tres plantillas base obligatorias."
             )
             with st.form("form_nueva_empresa"):
                 nombre_empresa = st.text_input("Nombre de la Empresa:")
@@ -135,15 +133,21 @@ else:
                     "Icono o Logo (Emoji o URL corta):", value="📊"
                 )
 
-                st.markdown("#### Plantillas Base del Sistema")
-                p1 = st.text_input(
-                    "Plantilla 1:", value="Plantilla_Estructura"
+                st.markdown("#### Subida de las Tres Plantillas Base")
+                file_p1 = st.file_uploader(
+                    "Subir Plantilla_Estructura (Excel / CSV)",
+                    type=["csv", "xlsx"],
+                    key="up_p1",
                 )
-                p2 = st.text_input(
-                    "Plantilla 2:", value="Plantilla_Modelo_Competencias"
+                file_p2 = st.file_uploader(
+                    "Subir Plantilla_Modelo_Competencias (Excel / CSV)",
+                    type=["csv", "xlsx"],
+                    key="up_p2",
                 )
-                p3 = st.text_input(
-                    "Plantilla 3:", value="Plantilla_Recursos_70_20_10"
+                file_p3 = st.file_uploader(
+                    "Subir Plantilla_Recursos_70_20_10 (Excel / CSV)",
+                    type=["csv", "xlsx"],
+                    key="up_p3",
                 )
 
                 admin_correo = st.text_input(
@@ -154,14 +158,32 @@ else:
                 )
 
                 submit_empresa = st.form_submit_button(
-                    "💾 Registrar Empresa en Skala"
+                    "💾 Registrar Empresa y Plantillas en Skala"
                 )
 
                 if submit_empresa:
                     if nombre_empresa and admin_correo:
+                        # Guardar referencias de archivos cargados
+                        archivos_dict = {
+                            "Plantilla_Estructura": (
+                                file_p1.name if file_p1 else "Sin archivo"
+                            ),
+                            "Plantilla_Modelo_Competencias": (
+                                file_p2.name if file_p2 else "Sin archivo"
+                            ),
+                            "Plantilla_Recursos_70_20_10": (
+                                file_p3.name if file_p3 else "Sin archivo"
+                            ),
+                        }
+
                         st.session_state.empresas[nombre_empresa] = {
                             "logo": logo_empresa,
-                            "plantillas": [p1, p2, p3],
+                            "plantillas": [
+                                "Plantilla_Estructura",
+                                "Plantilla_Modelo_Competencias",
+                                "Plantilla_Recursos_70_20_10",
+                            ],
+                            "archivos_plantillas": archivos_dict,
                             "admin": admin_correo,
                         }
                         st.session_state.usuarios[admin_correo] = {
@@ -170,7 +192,8 @@ else:
                             "empresa": nombre_empresa,
                         }
                         st.success(
-                            f"¡Empresa {nombre_empresa} dada de alta con éxito!"
+                            f"¡Empresa {nombre_empresa} y sus plantillas dadas"
+                            " de alta con éxito!"
                         )
                     else:
                         st.error(
@@ -181,8 +204,9 @@ else:
             st.markdown("### Empresas Activas en el Sistema")
             for emp, info in st.session_state.empresas.items():
                 st.info(
-                    f"**{info['logo']} {emp}** — Plantillas: "
-                    f"{', '.join(info['plantillas'])} — Admin: {info['admin']}"
+                    f"**{info['logo']} {emp}** — Admin: {info['admin']} \n\n"
+                    f"📁 Archivos base: "
+                    f"{info.get('archivos_plantillas', {})}"
                 )
 
         with tab2:
@@ -240,6 +264,7 @@ else:
                     "Plantilla_Recursos_70_20_10",
                 ],
                 "logo": "📊",
+                "archivos_plantillas": {},
             },
         )
 
@@ -248,8 +273,9 @@ else:
             f" {emp_actual}"
         )
         st.markdown(
-            "Administra los registros manuales o reemplaza la información de"
-            " las tres plantillas oficiales de tu empresa."
+            "Aquí puedes reemplazar las tres plantillas oficiales de tu"
+            " empresa, o gestionar registros de manera manual, modificando o"
+            " eliminando según sea necesario."
         )
 
         plantilla_seleccionada = st.selectbox(
@@ -257,18 +283,33 @@ else:
             config_emp["plantillas"],
         )
 
-        with st.form("form_datos_plantilla"):
-            st.markdown(
-                f"#### Editando registros para: *{plantilla_seleccionada}*"
+        # Opción para reemplazar archivo de esta plantilla específica
+        st.markdown("#### 🔄 Reemplazar o Actualizar Archivo de Plantilla")
+        nuevo_archivo_plantilla = st.file_uploader(
+            f"Subir nueva versión para {plantilla_seleccionada}",
+            type=["csv", "xlsx"],
+            key=f"repl_{plantilla_seleccionada}",
+        )
+        if nuevo_archivo_plantilla:
+            if "archivos_plantillas" not in config_emp:
+                config_emp["archivos_plantillas"] = {}
+            config_emp["archivos_plantillas"][plantilla_seleccionada] = (
+                nuevo_archivo_plantilla.name
             )
-            col1, col2 = st.columns(2)
-            item_nombre = col1.text_input("Nombre / Elemento del Registro:")
-            item_valor = col2.text_input(
-                "Valor o Detalle (Ej. Calificación, Estatus, Avance):"
+            st.success(
+                f"¡Plantilla {plantilla_seleccionada} actualizada con éxito con"
+                f" el archivo {nuevo_archivo_plantilla.name}!"
             )
 
+        st.markdown("---")
+        st.markdown("#### ✏️ Gestión Manual de Registros (Agregar / Modificar)")
+        with st.form("form_datos_plantilla"):
+            col1, col2 = st.columns(2)
+            item_nombre = col1.text_input("Nombre / Elemento del Registro:")
+            item_valor = col2.text_input("Valor o Detalle:")
+
             guardar_item = st.form_submit_button(
-                "➕ Agregar / Reemplazar Información"
+                "➕ Agregar / Modificar Información"
             )
 
             if guardar_item and item_nombre:
@@ -278,7 +319,7 @@ else:
                     "elemento": item_nombre,
                     "valor": item_valor,
                 })
-                st.success("Información guardada con éxito en la plantilla.")
+                st.success("Información guardada con éxito.")
 
         st.markdown("### 📋 Registros Actuales de la Empresa")
         registros_empresa = [
@@ -289,14 +330,16 @@ else:
 
         if registros_empresa:
             for idx, reg in enumerate(registros_empresa):
-                st.write(
+                col_reg1, col_reg2 = st.columns([4, 1])
+                col_reg1.write(
                     f"**{idx+1}. [{reg['plantilla']}]** {reg['elemento']} :"
                     f" *{reg['valor']}*"
                 )
+                if col_reg2.button("🗑️ Eliminar", key=f"del_{idx}"):
+                    st.session_state.datos_plantillas.pop(idx)
+                    st.rerun()
         else:
-            st.info(
-                "No hay registros cargados manualmente en esta empresa todavía."
-            )
+            st.info("No hay registros cargados para esta empresa todavía.")
 
     # ----------------------------------------------------
     # VISTA 3: GERENTE
