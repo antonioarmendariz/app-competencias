@@ -206,89 +206,104 @@ else:
 
             st.markdown("### Empresas Activas en el Sistema")
             for emp, info in st.session_state.empresas.items():
-                st.info(
-                    f"**{info['logo']} {emp}** — Admin: {info['admin']} \n\n"
-                    f"📁 Archivos base: "
-                    f"{info.get('archivos_plantillas', {})}"
-                )
+                if emp != "INNODEP":
+                    st.info(
+                        f"**{info['logo']} {emp}** — Admin: {info['admin']}"
+                        " \n\n📁 Archivos base:"
+                        f" {info.get('archivos_plantillas', {})}"
+                    )
 
         with tab2:
             st.markdown(
                 "### 👥 Gestión de Usuarios por Empresa Seleccionada"
             )
 
-            # Paso 1: Elegir la empresa primero
-            empresa_seleccionada = st.selectbox(
-                "1. Selecciona la empresa para gestionar sus usuarios:",
-                list(st.session_state.empresas.keys()),
-            )
+            # Filtrar empresas para excluir "INNODEP" de la selección de clientes
+            empresas_clientes = [
+                e for e in st.session_state.empresas.keys() if e != "INNODEP"
+            ]
 
-            st.markdown("---")
-            st.markdown(
-                f"#### ➕ Registrar Usuario para: *{empresa_seleccionada}*"
-            )
-
-            # Paso 2: Formulario de alta para la empresa elegida
-            with st.form("form_usuario_por_empresa"):
-                col_u1, col_u2 = st.columns(2)
-                u_nombre = col_u1.text_input("Nombre completo:")
-                u_correo = col_u2.text_input("Correo electrónico:")
-
-                col_u3, col_u4 = st.columns(2)
-                u_rol = col_u3.selectbox(
-                    "Rol asignado:", ["AdminEmpresa", "Gerente"]
-                )
-                u_pass = col_u4.text_input("Contraseña:", type="password")
-
-                guardar_usuario_emp = st.form_submit_button(
-                    "💾 Guardar Usuario en la Empresa"
+            if empresas_clientes:
+                empresa_seleccionada = st.selectbox(
+                    "1. Selecciona la empresa cliente para gestionar sus"
+                    " usuarios:",
+                    empresas_clientes,
                 )
 
-                if guardar_usuario_emp:
-                    if u_correo and u_nombre:
-                        st.session_state.usuarios[u_correo] = {
-                            "nombre": u_nombre,
-                            "password": u_pass,
-                            "rol": u_rol,
-                            "empresa": empresa_seleccionada,
-                        }
-                        st.success(
-                            f"Usuario {u_nombre} registrado en"
-                            f" {empresa_seleccionada} correctamente."
-                        )
-                    else:
-                        st.error("Por favor ingresa el nombre y el correo.")
+                st.markdown("---")
+                st.markdown(
+                    f"#### ➕ Registrar Usuario para: *{empresa_seleccionada}*"
+                )
 
-            st.markdown("---")
-            st.markdown(
-                f"#### 📋 Lista de Usuarios de: *{empresa_seleccionada}*"
-            )
+                with st.form("form_usuario_por_empresa"):
+                    col_u1, col_u2 = st.columns(2)
+                    u_nombre = col_u1.text_input("Nombre completo:")
+                    u_correo = col_u2.text_input("Correo electrónico:")
 
-            # Filtrar usuarios de la empresa seleccionada
-            usuarios_filtrados = {
-                k: v
-                for k, v in st.session_state.usuarios.items()
-                if v["empresa"] == empresa_seleccionada
-                and v["rol"] != "KeyUserGlobal"
-            }
-
-            if usuarios_filtrados:
-                for mail, u_info in usuarios_filtrados.items():
-                    col_fila_1, col_fila_2 = st.columns([5, 1])
-                    col_fila_1.markdown(
-                        f"👤 **{u_info['nombre']}** ({mail}) — Rol:"
-                        f" `{u_info['rol']}`"
+                    col_u3, col_u4 = st.columns(2)
+                    u_rol = col_u3.selectbox(
+                        "Rol asignado:", ["AdminEmpresa", "Gerente"]
                     )
-                    if col_fila_2.button(
-                        "🗑️ Borrar", key=f"del_emp_user_{mail}"
-                    ):
-                        del st.session_state.usuarios[mail]
-                        st.success(f"Usuario {mail} eliminado con éxito.")
-                        st.rerun()
+                    u_pass = col_u4.text_input("Contraseña:", type="password")
+
+                    guardar_usuario_emp = st.form_submit_button(
+                        "💾 Guardar Usuario en la Empresa"
+                    )
+
+                    if guardar_usuario_emp:
+                        if u_correo and u_nombre:
+                            st.session_state.usuarios[u_correo] = {
+                                "nombre": u_nombre,
+                                "password": u_pass,
+                                "rol": u_rol,
+                                "empresa": empresa_seleccionada,
+                            }
+                            st.success(
+                                f"Usuario {u_nombre} registrado en"
+                                f" {empresa_seleccionada} correctamente."
+                            )
+                        else:
+                            st.error(
+                                "Por favor ingresa el nombre y el correo."
+                            )
+
+                st.markdown("---")
+                st.markdown(
+                    f"#### 📋 Lista de Usuarios de: *{empresa_seleccionada}*"
+                )
+
+                usuarios_filtrados = {
+                    k: v
+                    for k, v in st.session_state.usuarios.items()
+                    if v["empresa"] == empresa_seleccionada
+                    and v["rol"] != "KeyUserGlobal"
+                }
+
+                if usuarios_filtrados:
+                    for mail, u_info in usuarios_filtrados.items():
+                        col_fila_1, col_fila_2 = st.columns([5, 1])
+                        col_fila_1.markdown(
+                            f"👤 **{u_info['nombre']}** ({mail}) — Rol:"
+                            f" `{u_info['rol']}`"
+                        )
+                        if col_fila_2.button(
+                            "🗑️ Borrar", key=f"del_emp_user_{mail}"
+                        ):
+                            del st.session_state.usuarios[mail]
+                            st.success(
+                                f"Usuario {mail} eliminado con éxito."
+                            )
+                            st.rerun()
+                else:
+                    st.info(
+                        f"No hay usuarios registrados para {empresa_seleccionada}"
+                        " todavía."
+                    )
             else:
-                st.info(
-                    f"No hay usuarios registrados para {empresa_seleccionada}"
-                    " todavía."
+                st.warning(
+                    "⚠️ No hay empresas clientes dadas de alta todavía. Ve a"
+                    ' la pestaña "Alta de Empresas" para registrar la'
+                    " primera."
                 )
 
         with tab3:
