@@ -111,14 +111,13 @@ else:
     # ----------------------------------------------------
     if st.session_state.user_rol == "KeyUserGlobal":
         st.markdown(
-            "### ⚙️ Módulo Global de Key User (Gestión de Empresas y Usuarios"
-            " Globales)"
+            "### ⚙️ Módulo Global de Key User (Gestión de Empresas y Usuarios)"
         )
 
         tab1, tab2 = st.tabs(
             [
-                "🏢 Alta de Empresas (Subida de Plantillas)",
-                "👥 Gestión de Key Users & Admins",
+                "🏢 Alta de Empresas (Plantillas Base)",
+                "👥 Gestión de Usuarios del Sistema",
             ]
         )
 
@@ -151,7 +150,7 @@ else:
                 )
 
                 admin_correo = st.text_input(
-                    "Correo del Administrador de la Empresa:"
+                    "Correo del Administrador Inicial de la Empresa:"
                 )
                 admin_pass = st.text_input(
                     "Contraseña temporal del Administrador:", type="password"
@@ -163,7 +162,6 @@ else:
 
                 if submit_empresa:
                     if nombre_empresa and admin_correo:
-                        # Guardar referencias de archivos cargados
                         archivos_dict = {
                             "Plantilla_Estructura": (
                                 file_p1.name if file_p1 else "Sin archivo"
@@ -192,8 +190,7 @@ else:
                             "empresa": nombre_empresa,
                         }
                         st.success(
-                            f"¡Empresa {nombre_empresa} y sus plantillas dadas"
-                            " de alta con éxito!"
+                            f"¡Empresa {nombre_empresa} dada de alta con éxito!"
                         )
                     else:
                         st.error(
@@ -211,10 +208,12 @@ else:
 
         with tab2:
             st.markdown(
-                "### 👤 Gestión de Key Users Globales y Administradores de"
-                " Empresa"
+                "### 👥 Control y Separación de Usuarios del Sistema"
             )
-            with st.form("form_gestion_usuarios"):
+
+            # Sub-sección 1: Alta de nuevos usuarios (Globales o de Empresa)
+            with st.form("form_alta_usuario_general"):
+                st.markdown("#### ➕ Registrar Nuevo Usuario")
                 u_correo = st.text_input("Correo del Usuario:")
                 u_pass = st.text_input("Contraseña:", type="password")
                 u_rol = st.selectbox(
@@ -225,29 +224,77 @@ else:
                     "Empresa Asociada:", list(st.session_state.empresas.keys())
                 )
 
-                col_a, col_b = st.columns(2)
-                crear_u = col_a.form_submit_button("➕ Guardar / Actualizar")
-                eliminar_u = col_b.form_submit_button("🗑️ Dar de Baja Usuario")
-
+                crear_u = st.form_submit_button("💾 Guardar Usuario")
                 if crear_u:
-                    st.session_state.usuarios[u_correo] = {
-                        "password": u_pass,
-                        "rol": u_rol,
-                        "empresa": u_empresa,
-                    }
-                    st.success(f"Usuario {u_correo} actualizado correctamente.")
-                if eliminar_u:
-                    if u_correo in st.session_state.usuarios:
-                        del st.session_state.usuarios[u_correo]
-                        st.warning(
-                            f"Usuario {u_correo} dado de baja del sistema."
+                    if u_correo:
+                        st.session_state.usuarios[u_correo] = {
+                            "password": u_pass,
+                            "rol": u_rol,
+                            "empresa": u_empresa,
+                        }
+                        st.success(
+                            f"Usuario {u_correo} registrado correctamente."
                         )
+                    else:
+                        st.error("El correo no puede estar vacío.")
 
-            st.markdown("### 📋 Usuarios Registrados en el Sistema")
-            for mail, u_info in st.session_state.usuarios.items():
-                st.write(
-                    f"- **{mail}** | Rol: `{u_info['rol']}` | Empresa:"
-                    f" `{u_info['empresa']}`"
+            st.markdown("---")
+
+            # Sub-sección 2: Listas separadas con baja de 1 solo clic
+            st.markdown("#### 🛡️ Key Users Globales")
+            global_users = {
+                k: v
+                for k, v in st.session_state.usuarios.items()
+                if v["rol"] == "KeyUserGlobal"
+            }
+
+            if global_users:
+                for mail, info in global_users.items():
+                    col_g1, col_g2 = st.columns([4, 1])
+                    col_g1.markdown(
+                        f"⚡ **{mail}** — Empresa base: `{info['empresa']}`"
+                    )
+                    # No permitir borrar al usuario principal si se desea proteger, o permitir baja directa
+                    if col_g1.button(
+                        "🗑️ Dar de baja", key=f"del_global_{mail}"
+                    ):
+                        if mail == "antonio.armendariz@innodep.com.mx":
+                            st.error(
+                                "No se puede dar de baja al Key User maestro."
+                            )
+                        else:
+                            del st.session_state.usuarios[mail]
+                            st.success(
+                                f"Key User {mail} dado de baja con éxito."
+                            )
+                            st.rerun()
+            else:
+                st.info("No hay otros Key Users globales registrados.")
+
+            st.markdown("---")
+            st.markdown("#### 🏢 Roles de Empresas (Admins y Gerentes)")
+            empresa_users = {
+                k: v
+                for k, v in st.session_state.usuarios.items()
+                if v["rol"] != "KeyUserGlobal"
+            }
+
+            if empresa_users:
+                for mail, info in empresa_users.items():
+                    col_e1, col_e2 = st.columns([4, 1])
+                    col_e1.markdown(
+                        f"👤 **{mail}** | Rol: `{info['rol']}` | Empresa:"
+                        f" `{info['empresa']}`"
+                    )
+                    if col_e1.button("🗑️ Dar de baja", key=f"del_emp_{mail}"):
+                        del st.session_state.usuarios[mail]
+                        st.success(
+                            f"Usuario {mail} dado de baja de la empresa."
+                        )
+                        st.rerun()
+            else:
+                st.info(
+                    "No hay usuarios de empresa registrados en este momento."
                 )
 
     # ----------------------------------------------------
@@ -283,7 +330,6 @@ else:
             config_emp["plantillas"],
         )
 
-        # Opción para reemplazar archivo de esta plantilla específica
         st.markdown("#### 🔄 Reemplazar o Actualizar Archivo de Plantilla")
         nuevo_archivo_plantilla = st.file_uploader(
             f"Subir nueva versión para {plantilla_seleccionada}",
@@ -297,8 +343,7 @@ else:
                 nuevo_archivo_plantilla.name
             )
             st.success(
-                f"¡Plantilla {plantilla_seleccionada} actualizada con éxito con"
-                f" el archivo {nuevo_archivo_plantilla.name}!"
+                f"¡Plantilla {plantilla_seleccionada} actualizada con éxito!"
             )
 
         st.markdown("---")
@@ -335,7 +380,7 @@ else:
                     f"**{idx+1}. [{reg['plantilla']}]** {reg['elemento']} :"
                     f" *{reg['valor']}*"
                 )
-                if col_reg2.button("🗑️ Eliminar", key=f"del_{idx}"):
+                if col_reg2.button("🗑️ Eliminar", key=f"del_reg_{idx}"):
                     st.session_state.datos_plantillas.pop(idx)
                     st.rerun()
         else:
