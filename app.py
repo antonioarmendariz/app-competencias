@@ -13,9 +13,9 @@ if "empresas" not in st.session_state:
         "INNODEP": {
             "logo": "🎯",
             "plantillas": [
-                "Evaluación de Desempeño",
-                "DNC (Detección de Necesidades)",
-                "Plan de Carrera",
+                "Plantilla_Estructura",
+                "Plantilla_Modelo_Competencias",
+                "Plantilla_Recursos_70_20_10",
             ],
             "admin": "antonio.armendariz@innodep.com.mx",
         }
@@ -25,7 +25,7 @@ if "usuarios" not in st.session_state:
     st.session_state.usuarios = {
         "antonio.armendariz@innodep.com.mx": {
             "password": "admin2026",
-            "rol": "KeyUser",
+            "rol": "KeyUserGlobal",
             "empresa": "INNODEP",
         }
     }
@@ -50,15 +50,8 @@ if not st.session_state.logged_in:
     password = st.sidebar.text_input("Contraseña:", type="password")
 
     if st.sidebar.button("🔑 Ingresar al Sistema", use_container_width=True):
-        # Validar Key User maestro
-        if correo == "antonio.armendariz@innodep.com.mx" and password == "admin2026":
-            st.session_state.logged_in = True
-            st.session_state.user_email = correo
-            st.session_state.user_rol = "KeyUser"
-            st.session_state.user_empresa = "INNODEP"
-            st.rerun()
-        # Validar usuarios registrados en la plataforma
-        elif (
+        # Validar usuarios registrados en la plataforma (incluyendo Key Users globales adicionales)
+        if (
             correo in st.session_state.usuarios
             and st.session_state.usuarios[correo]["password"] == password
         ):
@@ -72,9 +65,7 @@ if not st.session_state.logged_in:
         else:
             st.sidebar.error("Credenciales incorrectas.")
 
-    st.sidebar.markdown(
-        "---"
-    )  # Line separator for visual distinction
+    st.sidebar.markdown("---")
     st.sidebar.markdown(
         "*Inicia sesión con tus credenciales para habilitar los paneles.*"
     )
@@ -118,34 +109,45 @@ else:
     st.markdown("---")
 
     # ----------------------------------------------------
-    # VISTA 1: KEY USER (Antonio Armendariz)
+    # VISTA 1: KEY USER GLOBAL (Antonio y otros Key Users)
     # ----------------------------------------------------
-    if st.session_state.user_rol == "KeyUser":
+    if st.session_state.user_rol == "KeyUserGlobal":
         st.markdown(
-            "### ⚙️ Módulo Global de Key User (Gestión de Empresas y Clientes)"
+            "### ⚙️ Módulo Global de Key User (Gestión de Empresas y Usuarios"
+            " Globales)"
         )
 
         tab1, tab2 = st.tabs(
-            ["🏢 Alta y Configuración de Empresas", "👥 Gestión de Key Users"]
+            [
+                "🏢 Alta de Empresas (Plantillas Base)",
+                "👥 Gestión de Key Users & Admins",
+            ]
         )
 
         with tab1:
             st.markdown(
-                "Registra una nueva empresa cliente, define sus 3 plantillas y"
-                " su logo."
+                "Registra una nueva empresa cliente. Por defecto se asignan las"
+                " tres plantillas base estándar."
             )
             with st.form("form_nueva_empresa"):
                 nombre_empresa = st.text_input("Nombre de la Empresa:")
                 logo_empresa = st.text_input(
                     "Icono o Logo (Emoji o URL corta):", value="📊"
                 )
-                st.markdown("#### Configuración de las 3 Plantillas Base")
-                p1 = st.text_input("Plantilla 1:", value="Plantilla Base 1")
-                p2 = st.text_input("Plantilla 2:", value="Plantilla Base 2")
-                p3 = st.text_input("Plantilla 3:", value="Plantilla Base 3")
+
+                st.markdown("#### Plantillas Base del Sistema")
+                p1 = st.text_input(
+                    "Plantilla 1:", value="Plantilla_Estructura"
+                )
+                p2 = st.text_input(
+                    "Plantilla 2:", value="Plantilla_Modelo_Competencias"
+                )
+                p3 = st.text_input(
+                    "Plantilla 3:", value="Plantilla_Recursos_70_20_10"
+                )
 
                 admin_correo = st.text_input(
-                    "Correo del Administrador Inicial para esta Empresa:"
+                    "Correo del Administrador de la Empresa:"
                 )
                 admin_pass = st.text_input(
                     "Contraseña temporal del Administrador:", type="password"
@@ -162,7 +164,6 @@ else:
                             "plantillas": [p1, p2, p3],
                             "admin": admin_correo,
                         }
-                        # Registrar automáticamente al admin de esa empresa
                         st.session_state.usuarios[admin_correo] = {
                             "password": admin_pass,
                             "rol": "AdminEmpresa",
@@ -186,13 +187,15 @@ else:
 
         with tab2:
             st.markdown(
-                "### 👤 Alta, Modificación y Baja de Key Users / Administradores"
+                "### 👤 Gestión de Key Users Globales y Administradores de"
+                " Empresa"
             )
             with st.form("form_gestion_usuarios"):
                 u_correo = st.text_input("Correo del Usuario:")
                 u_pass = st.text_input("Contraseña:", type="password")
                 u_rol = st.selectbox(
-                    "Rol en el Sistema:", ["KeyUser", "AdminEmpresa", "Gerente"]
+                    "Rol en el Sistema:",
+                    ["KeyUserGlobal", "AdminEmpresa", "Gerente"],
                 )
                 u_empresa = st.selectbox(
                     "Empresa Asociada:", list(st.session_state.empresas.keys())
@@ -216,6 +219,13 @@ else:
                             f"Usuario {u_correo} dado de baja del sistema."
                         )
 
+            st.markdown("### 📋 Usuarios Registrados en el Sistema")
+            for mail, u_info in st.session_state.usuarios.items():
+                st.write(
+                    f"- **{mail}** | Rol: `{u_info['rol']}` | Empresa:"
+                    f" `{u_info['empresa']}`"
+                )
+
     # ----------------------------------------------------
     # VISTA 2: ADMINISTRADOR DE EMPRESA
     # ----------------------------------------------------
@@ -224,7 +234,11 @@ else:
         config_emp = st.session_state.empresas.get(
             emp_actual,
             {
-                "plantillas": ["P1", "P2", "P3"],
+                "plantillas": [
+                    "Plantilla_Estructura",
+                    "Plantilla_Modelo_Competencias",
+                    "Plantilla_Recursos_70_20_10",
+                ],
                 "logo": "📊",
             },
         )
@@ -234,9 +248,8 @@ else:
             f" {emp_actual}"
         )
         st.markdown(
-            "Aquí puedes administrar las 3 plantillas configuradas, subir o"
-            " reemplazar su información, y gestionar registros de forma"
-            " manual."
+            "Administra los registros manuales o reemplaza la información de"
+            " las tres plantillas oficiales de tu empresa."
         )
 
         plantilla_seleccionada = st.selectbox(
